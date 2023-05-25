@@ -14,7 +14,6 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
-{{- $hostMountPath := include "alluxio.mount.basePath" "" }}
 {{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse" }}
 {{- $alluxioFuseLogDir := include "alluxio.basePath" "/logs"}}
 {{- $alluxioFuseLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "fuse-log") }}
@@ -84,7 +83,6 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
-        {{- if .Values.hostPathForLogging }}
         - name: path-permission
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -94,11 +92,17 @@ spec:
           command: [ "chown", "-R" ]
           args:
             - {{ .Values.user }}:{{ .Values.group }}
+            - {{ $alluxioFuseMountPoint }}
+            {{- if .Values.hostPathForLogging }}
             - {{ $alluxioFuseLogDir }}
+            {{- end }}
           volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: {{ $alluxioFuseMountPoint }}
+            {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioFuseLogVolumeName }}
               mountPath: {{ $alluxioFuseLogDir }}
-        {{- end }}
+            {{- end }}
         - name: wait-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: ["/bin/sh", "-c"]
@@ -141,7 +145,7 @@ spec:
                 command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", {{ $alluxioFuseMountPoint }}]
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: {{ $hostMountPath }}
+              mountPath: {{ $alluxioFuseMountPoint }}
               mountPropagation: Bidirectional
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
@@ -162,7 +166,7 @@ spec:
       volumes:
         - name: alluxio-fuse-mount
           hostPath:
-            path: {{ $hostMountPath }}
+            path: {{ $alluxioFuseMountPoint }}
             type: DirectoryOrCreate
         - name: {{ $fullName }}-alluxio-conf
           configMap:
