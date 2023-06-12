@@ -121,7 +121,6 @@ spec:
           {{- if .Values.fuse.resources }}
 {{ include "alluxio.resources" .Values.fuse.resources | indent 10 }}
           {{- end }}
-          command: ["/entrypoint.sh"]
           args:
             - fuse
             - {{ required "The path of the dataset must be set." .Values.dataset.path }}

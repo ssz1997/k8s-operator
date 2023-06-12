@@ -109,7 +109,6 @@ spec:
           {{- if .Values.proxy.resources  }}
 {{ include "alluxio.resources" .Values.proxy.resources | indent 10 }}
           {{- end }}
-          command: ["/entrypoint.sh"]
           args:
             - proxy
           env:

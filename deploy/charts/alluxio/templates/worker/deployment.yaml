@@ -140,10 +140,8 @@ spec:
           {{- if .Values.worker.resources  }}
 {{ include "alluxio.resources" .Values.worker.resources | indent 10 }}
           {{- end }}
-          command: ["tini", "--", "/entrypoint.sh"]
           args:
-            - worker-only
-            - --no-format
+            - worker
           env:
           - name: ALLUXIO_WORKER_HOSTNAME
             valueFrom:

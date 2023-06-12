@@ -128,10 +128,8 @@ spec:
           {{- if .Values.master.resources }}
 {{ include "alluxio.resources" .Values.master.resources | indent 10 }}
           {{- end }}
-          command: ["tini", "--", "/entrypoint.sh"]
           args:
-            - master-only
-            - --no-format
+            - master
           env:
             - name: ALLUXIO_MASTER_HOSTNAME
               valueFrom:
