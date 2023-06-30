@@ -13,7 +13,7 @@ FROM golang:1.19-alpine3.17 AS csi-dev
 
 ENV GO111MODULE=on
 RUN mkdir -p /alluxio-csi
-COPY ../../csi /alluxio-csi
+COPY ../../../csi /alluxio-csi
 RUN cd /alluxio-csi && \
     CGO_ENABLED=0 go build -o /usr/local/bin/alluxio-csi
 
