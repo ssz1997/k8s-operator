@@ -1,6 +1,6 @@
 dependencies:
 - name: alluxio-csi
   repository: file://../alluxio-csi
-  version: 0.7.0
-digest: sha256:4da094acb27f796b2931611fddd8461ace31be31ae23ecc462097ccbc300e23c
-generated: "2023-06-22T17:33:17.062587-07:00"
+  version: 1.1.0-SNAPSHOT
+digest: sha256:baf6e1f807a2fb88e069493fde0c33979eb7684f953238714bf07141bbbfb9dc
+generated: "2023-07-17T13:43:38.303145-07:00"
