@@ -16,7 +16,7 @@ WORKDIR /opt/alluxio-k8s-operator
 
 COPY ../.. .
 
-RUN bash -c ./build/generate.sh
+RUN bash -c ./dev/build/generate.sh
 
 RUN go mod download
 
