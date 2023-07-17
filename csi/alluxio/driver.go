@@ -20,7 +20,7 @@ import (
 
 const (
 	driverName = "alluxio"
-	version    = "1.0.0"
+	version    = "1.1.0-SNAPSHOT"
 )
 
 type driver struct {
