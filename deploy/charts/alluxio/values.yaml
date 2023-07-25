@@ -332,6 +332,29 @@ csi:
   # whether to launch CSI components
   enabled: false
 
+
+## ETCD cluster ##
+# For coordination operation for alluxio components such as
+# worker membership management
+etcd:
+  # by default etcd is not launched as part of Alluxio deployment
+  enabled: false
+  # Disabling all authentication for client-server server-peer
+  # communication as default, to enable: check the settings of values
+  # here : https://github.com/bitnami/charts/blob/main/bitnami/etcd/values.yaml
+  auth:
+    client:
+      enableAuthentication: false
+    peer:
+      enableAuthentication: false
+    rbac:
+      allowNoneAuthentication: true
+      create: false
+    token:
+      enabled: false
+# Set num of etcd instances, it needs to be a odd number
+#  replicaCount: 3
+
 ##  Metrics System ##
 
 # Settings for Alluxio metrics
