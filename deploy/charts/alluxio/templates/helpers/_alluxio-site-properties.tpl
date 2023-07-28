@@ -43,7 +43,7 @@ alluxio.master.hostname={{ include "alluxio.fullname" . }}-master-0
 # Page Storage
 alluxio.worker.block.store.type=PAGE
 alluxio.worker.page.store.type=LOCAL
-alluxio.worker.page.store.dirs=/mnt/alluxio/pagestore
+alluxio.worker.page.store.dirs={{ .Values.pagestore.hostPath }}
 {{ printf "alluxio.worker.page.store.sizes=%v" .Values.pagestore.quota }}
 
 {{- if .Values.etcd.enabled }}
