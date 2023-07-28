@@ -19,6 +19,24 @@
 {{- $alluxioWorkerPagestorePath := include "alluxio.mount.basePath" "/pagestore" }}
 {{- $alluxioWorkerLogDir := include "alluxio.basePath" "/logs"}}
 
+{{- define "pagestoreHostPathVolumes" -}}
+{{- $paths := splitList "," .Values.pagestore.hostPath }}
+{{- range $i, $path := $paths }}
+- name: pagestore-{{ $i }}
+  hostPath:
+    path: {{ $path }}
+    type: DirectoryOrCreate
+{{- end }}
+{{- end -}}
+
+{{- define "pagestoreHostPathVolumeMounts" -}}
+{{- $paths := splitList "," .Values.pagestore.hostPath }}
+{{- range $i, $path := $paths }}
+- mountPath: {{ $path }}
+  name: pagestore-{{ $i }}
+{{- end }}
+{{- end -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -125,7 +143,7 @@ spec:
             mountPath: {{ $alluxioWorkerLogDir }}
           {{- end }}
           {{- if eq .Values.pagestore.type "hostPath" }}
-          - name: {{ $pagestoreVolumeName }}
+{{- include "pagestoreHostPathVolumeMounts" . | indent 10 }}
             mountPath: {{ $alluxioWorkerPagestorePath }}
           {{- end }}
       - name: wait-master
@@ -193,8 +211,12 @@ spec:
             - name: {{ $alluxioWorkerLogVolumeName }}
               mountPath: {{ $alluxioWorkerLogDir }}
             {{- end }}
+            {{- if eq .Values.pagestore.type "hostPath" }}
+{{- include "pagestoreHostPathVolumeMounts" . | indent 12 }}
+            {{- else }}
             - mountPath: {{ $alluxioWorkerPagestorePath }}
               name: {{ $pagestoreVolumeName }}
+            {{- end }}
             {{- if .Values.metastore.enabled }}
             - name: {{ $metastoreVolumeName }}
               mountPath: {{ include "alluxio.mount.basePath" "/metastore"}}
@@ -233,20 +255,17 @@ spec:
         {{- if .Values.pvcMounts }}
 {{- include "alluxio.persistentVolumeClaims" .Values.pvcMounts.worker | indent 8 }}
         {{- end }}
-        {{- if .Values.pagestore }}
-        - name: {{ $pagestoreVolumeName }}
         {{- if eq .Values.pagestore.type "hostPath" }}
-          hostPath:
-            path: {{ .Values.pagestore.hostPath }}
-            type: DirectoryOrCreate
+{{- include "pagestoreHostPathVolumes" . | indent 8 }}
         {{- else if eq .Values.pagestore.type "persistentVolumeClaim" }}
+        - name: {{ $pagestoreVolumeName }}
           persistentVolumeClaim:
             claimName: {{ include "alluxio.getPvcName" (dict "prefix" $fullName "component" "pagestore") }}
         {{- else if eq .Values.pagestore.type "emptyDir" }}
+        - name: {{ $pagestoreVolumeName }}
           emptyDir:
             sizeLimit: {{ .Values.pagestore.quota }}
             {{- if .Values.pagestore.memoryBacked }}
             medium: "Memory"
             {{- end }}
-        {{- end }}
         {{- end }}
