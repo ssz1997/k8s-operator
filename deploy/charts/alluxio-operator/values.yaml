@@ -15,3 +15,6 @@ nameOverride: alluxio-operator
 image: alluxio/alluxio-k8s-operator
 imageTag: latest
 imagePullPolicy: IfNotPresent
+
+alluxio-csi:
+  enabled: false
