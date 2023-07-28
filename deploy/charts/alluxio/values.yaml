@@ -239,7 +239,8 @@ pagestore:
     type: emptyDir
     # Size of each worker's storage space
     quota: 1Gi
-    # Required for volume type of hostPath, ignored otherwise
+    # Required for volume type of hostPath, ignored otherwise.
+    # To use multiple paths, separating each path with "," and separating each quota with ","
     hostPath: /mnt/alluxio/pagestore
     # Required for volume type of persistentVolumeClaim, ignored otherwise
     storageClass: "standard"
