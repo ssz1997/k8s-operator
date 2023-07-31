@@ -17,7 +17,7 @@ home: https://www.alluxio.io/
 dependencies:
 - name: etcd
   version: "9.0.5"
-  repository: "oci://registry-1.docker.io/bitnamicharts"
+  repository: "https://charts.bitnami.com/bitnami"
   condition: etcd.enabled
 maintainers:
 - name: Adit Madan
