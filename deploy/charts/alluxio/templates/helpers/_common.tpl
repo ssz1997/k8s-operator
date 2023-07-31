@@ -115,6 +115,15 @@ resources:
 {{- end }}
 {{- end -}}
 
+{{- define "alluxio.hostPaths" -}}
+{{- range $key, $val := . }}
+- name: {{ (splitList "/" $key) | last }}-volume
+  hostPath:
+    path: {{ $key }}
+    type: Directory
+{{- end }}
+{{- end -}}
+
 {{- define "alluxio.persistentVolumeClaims" -}}
 {{- range $key, $val := . }}
 - name: {{ $key }}-volume

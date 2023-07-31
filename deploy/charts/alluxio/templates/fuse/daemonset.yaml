@@ -165,6 +165,9 @@ spec:
             {{- if .Values.configMaps }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.configMaps.fuse "readOnly" true) | indent 12 }}
             {{- end }}
+            {{- if .Values.hostPaths }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.hostPaths.fuse "readOnly" false) | indent 12 }}
+            {{- end }}
             {{- if .Values.pvcMounts }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.pvcMounts.fuse "readOnly" false) | indent 12 }}
             {{- end }}
@@ -188,6 +191,9 @@ spec:
         {{- end }}
         {{- if .Values.configMaps }}
 {{- include "alluxio.configMapVolumes" .Values.configMaps.fuse | indent 8 }}
+        {{- end }}
+        {{- if .Values.hostPaths }}
+{{- include "alluxio.hostPaths" .Values.hostPaths.fuse | indent 8 }}
         {{- end }}
         {{- if .Values.pvcMounts }}
 {{- include "alluxio.persistentVolumeClaims" .Values.pvcMounts.fuse | indent 8 }}
