@@ -20,7 +20,7 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-const chartPath = "/opt/alluxio-helm-chart"
+const chartPath = "/opt/charts/alluxio"
 
 func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 	// if the release has already been deployed, requeue without further actions

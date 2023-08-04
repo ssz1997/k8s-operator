@@ -39,11 +39,14 @@ RUN groupadd --gid 1001 k8soperator && \
 
 WORKDIR /
 
-COPY --chown=1001:1001 ../../deploy/charts/alluxio /opt/alluxio-helm-chart
+COPY --chown=1001:1001 ../../deploy/charts/alluxio /opt/charts/alluxio
 COPY --chown=1001:1001 ../../deploy/jobs /opt/alluxio-jobs
 COPY --chown=1001:1001 --from=builder /opt/alluxio-k8s-operator/bin/alluxio-manager .
 COPY --chown=1001:1001 --from=builder /opt/alluxio-k8s-operator/bin/dataset-manager .
 COPY --chown=1001:1001 --from=builder /opt/helm/linux-amd64/helm /usr/local/bin/helm
+
+WORKDIR /opt/charts/alluxio
+RUN helm dependency update
 
 USER 1001
 

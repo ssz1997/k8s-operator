@@ -15,6 +15,10 @@ description: Open source data orchestration for analytics and machine learning i
 version: 1.1.0-SNAPSHOT
 home: https://www.alluxio.io/
 dependencies:
+- name: alluxio-monitor
+  version: 1.1.0-SNAPSHOT
+  repository: "file://../alluxio-monitor"
+  condition: alluxio-monitor.enabled
 - name: etcd
   version: "9.0.5"
   repository: "https://charts.bitnami.com/bitnami"
@@ -28,3 +32,4 @@ maintainers:
   email: shawn.sun@alluxio.com
 - name: Yang Che
   email: cheyang@163.com
+

@@ -52,6 +52,11 @@ spec:
           spec:
             description: AlluxioClusterSpec defines the desired state of AlluxioCluster
             properties:
+              alluxio-monitor:
+                properties:
+                  enabled:
+                    type: boolean
+                type: object
               configMaps:
                 properties:
                   fuse:
