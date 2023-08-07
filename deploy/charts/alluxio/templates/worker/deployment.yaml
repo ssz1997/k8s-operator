@@ -22,8 +22,7 @@
 {{- $alluxioWorkerSysInfoDirPath := include "alluxio.mount.basePath" "/system-info" }}
 
 {{- define "pagestoreHostPathVolumes" -}}
-{{- $paths := splitList "," .Values.pagestore.hostPath }}
-{{- range $i, $path := $paths }}
+{{- range $i, $path := splitList "," .Values.pagestore.hostPath }}
 - name: pagestore-{{ $i }}
   hostPath:
     path: {{ $path }}
@@ -32,8 +31,7 @@
 {{- end -}}
 
 {{- define "pagestoreHostPathVolumeMounts" -}}
-{{- $paths := splitList "," .Values.pagestore.hostPath }}
-{{- range $i, $path := $paths }}
+{{- range $i, $path := splitList "," .Values.pagestore.hostPath }}
 - mountPath: {{ $path }}
   name: pagestore-{{ $i }}
 {{- end }}
