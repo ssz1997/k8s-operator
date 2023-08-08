@@ -461,6 +461,8 @@ fuse:
   jvmOptions:
     - fuseJvmOption1
     - fuseJvmOption2
+  # The path on the host machine for mounting Alluxio through AlluxioFuse
+  mountPath: /mnt/alluxiofuse
   # Fuse related mount options
   mountOptions:
     - allow_other
