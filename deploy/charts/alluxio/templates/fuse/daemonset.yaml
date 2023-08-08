@@ -14,8 +14,6 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
-{{- $hostMountPath := include "alluxio.mount.basePath" "" }}
-{{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse" }}
 {{- $alluxioFuseLogDir := include "alluxio.basePath" "/logs"}}
 {{- $alluxioFuseLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "fuse-log") }}
 
@@ -93,13 +91,13 @@ spec:
           command: [ "chown", "-R" ]
           args:
             - {{ .Values.user }}:{{ .Values.group }}
-            - {{ $hostMountPath }}
+            - {{ .Values.fuse.mountPath }}
             {{- if .Values.hostPathForLogging }}
             - {{ $alluxioFuseLogDir }}
             {{- end }}
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: {{ $hostMountPath }}
+              mountPath: {{ .Values.fuse.mountPath }}
             {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioFuseLogVolumeName }}
               mountPath: {{ $alluxioFuseLogDir }}
@@ -125,7 +123,7 @@ spec:
           args:
             - fuse
             - {{ required "The path of the dataset must be set." .Values.dataset.path }}
-            - {{ $alluxioFuseMountPoint }}
+            - {{ .Values.fuse.mountPath }}/fuse
             {{- range .Values.fuse.mountOptions }}
             - -o {{ . }}
             {{- end }}
@@ -143,10 +141,10 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", {{ $alluxioFuseMountPoint }}]
+                command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", {{ .Values.fuse.mountPath }}/fuse]
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: {{ $hostMountPath }}
+              mountPath: {{ .Values.fuse.mountPath }}
               mountPropagation: Bidirectional
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
@@ -167,7 +165,7 @@ spec:
       volumes:
         - name: alluxio-fuse-mount
           hostPath:
-            path: {{ $hostMountPath }}
+            path: {{ .Values.fuse.mountPath }}
             type: DirectoryOrCreate
         - name: {{ $fullName }}-alluxio-conf
           configMap:
