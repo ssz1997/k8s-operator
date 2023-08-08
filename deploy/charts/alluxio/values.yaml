@@ -306,6 +306,8 @@ fuse:
   # A list of JVM options specific to Alluxio Fuse
   jvmOptions:
     - "-XX:MaxDirectMemorySize=2g"
+  # The path on the host machine for mounting Alluxio through AlluxioFuse
+  mountPath: /mnt/alluxio
   # Fuse related mount options
   mountOptions:
     - allow_other
