@@ -46,7 +46,19 @@ spec:
       dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.imagePullSecrets }}
 {{ include "alluxio-csi.imagePullSecrets" . | indent 6 }}
-      {{- end}}
+      {{- end }}
+      nodeSelector:
+      {{- if .Values.nodePlugin.nodeSelector }}
+{{ toYaml .Values.nodePlugin.nodeSelector | trim | indent 8  }}
+      {{- end }}
+      affinity:
+      {{- if .Values.nodePlugin.affinity }}
+{{- toYaml .Values.nodePlugin.affinity | nindent 8 }}
+      {{- end }}
+      tolerations:
+      {{- if .Values.nodePlugin.tolerations }}
+{{ toYaml .Values.nodePlugin.tolerations | trim | indent 8  }}
+      {{- end }}
       containers:
         - name: node-driver-registrar
           image: {{ .Values.nodePlugin.driverRegistrar.image }}

@@ -48,7 +48,19 @@ spec:
       dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.imagePullSecrets }}
 {{ include "alluxio-csi.imagePullSecrets" . | indent 6 }}
-      {{- end}}
+      {{- end }}
+      nodeSelector:
+      {{- if .Values.controllerPlugin.nodeSelector }}
+{{ toYaml .Values.controllerPlugin.nodeSelector | trim | indent 8  }}
+      {{- end }}
+      affinity:
+      {{- if .Values.controllerPlugin.affinity }}
+{{- toYaml .Values.controllerPlugin.affinity | nindent 8 }}
+      {{- end }}
+      tolerations:
+      {{- if .Values.controllerPlugin.tolerations }}
+{{ toYaml .Values.controllerPlugin.tolerations | trim | indent 8  }}
+      {{- end }}
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
