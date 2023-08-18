@@ -29,7 +29,7 @@ type AlluxioClusterSpec struct {
 	User               string            `json:"user,omitempty" yaml:"user,omitempty"`
 	Group              string            `json:"group,omitempty" yaml:"group,omitempty"`
 	FsGroup            string            `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
-	HostNetwork        string            `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
+	HostNetwork        bool              `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
 	DnsPolicy          string            `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
 	ServiceAccountName string            `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
 	HostAliases        []HostAlias       `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`

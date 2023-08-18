@@ -1022,7 +1022,7 @@ spec:
                   type: object
                 type: array
               hostNetwork:
-                type: string
+                type: boolean
               image:
                 type: string
               imagePullPolicy:
