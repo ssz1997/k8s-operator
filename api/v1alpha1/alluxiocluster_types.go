@@ -20,34 +20,35 @@ import (
 
 // AlluxioClusterSpec defines the desired state of AlluxioCluster
 type AlluxioClusterSpec struct {
-	NameOverride       string            `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
-	Dataset            string            `json:"dataset" yaml:"dataset"`
-	Image              string            `json:"image,omitempty" yaml:"image,omitempty"`
-	ImageTag           string            `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
-	ImagePullPolicy    string            `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
-	ImagePullSecrets   []string          `json:"imagePullSecrets,omitempty" yaml:"imagePullSecrets,omitempty"`
-	User               string            `json:"user,omitempty" yaml:"user,omitempty"`
-	Group              string            `json:"group,omitempty" yaml:"group,omitempty"`
-	FsGroup            string            `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
-	HostNetwork        bool              `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
-	DnsPolicy          string            `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
-	ServiceAccountName string            `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
-	HostAliases        []HostAlias       `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`
-	NodeSelector       map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
-	Tolerations        []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
-	Properties         map[string]string `json:"properties,omitempty" yaml:"properties,omitempty"`
-	JvmOptions         []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
-	PvcMounts          MountSpec         `json:"pvcMounts,omitempty" yaml:"pvcMounts,omitempty"`
-	ConfigMaps         MountSpec         `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
-	Secrets            MountSpec         `json:"secrets,omitempty" yaml:"secrets,omitempty"`
-	Master             MasterSpec        `json:"master,omitempty" yaml:"master,omitempty"`
-	Journal            JournalSpec       `json:"journal,omitempty" yaml:"journal,omitempty"`
-	Worker             WorkerSpec        `json:"worker,omitempty" yaml:"worker,omitempty"`
-	Pagestore          PagestoreSpec     `json:"pagestore,omitempty" yaml:"pagestore,omitempty"`
-	Metastore          MetastoreSpec     `json:"metastore,omitempty" yaml:"metastore,omitempty"`
-	Proxy              ProxySpec         `json:"proxy,omitempty" yaml:"proxy,omitempty"`
-	Fuse               FuseSpec          `json:"fuse,omitempty" yaml:"fuse,omitempty"`
-	Metrics            MetricsSpec       `json:"metrics,omitempty" yaml:"metrics,omitempty"`
+	NameOverride       string             `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
+	Dataset            string             `json:"dataset" yaml:"dataset"`
+	Image              string             `json:"image,omitempty" yaml:"image,omitempty"`
+	ImageTag           string             `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
+	ImagePullPolicy    string             `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
+	ImagePullSecrets   []string           `json:"imagePullSecrets,omitempty" yaml:"imagePullSecrets,omitempty"`
+	User               string             `json:"user,omitempty" yaml:"user,omitempty"`
+	Group              string             `json:"group,omitempty" yaml:"group,omitempty"`
+	FsGroup            string             `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
+	HostNetwork        bool               `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
+	DnsPolicy          string             `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
+	ServiceAccountName string             `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
+	HostAliases        []HostAlias        `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`
+	NodeSelector       map[string]string  `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	Tolerations        []Toleration       `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
+	Properties         map[string]string  `json:"properties,omitempty" yaml:"properties,omitempty"`
+	JvmOptions         []string           `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	PvcMounts          MountSpec          `json:"pvcMounts,omitempty" yaml:"pvcMounts,omitempty"`
+	ConfigMaps         MountSpec          `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
+	Secrets            MountSpec          `json:"secrets,omitempty" yaml:"secrets,omitempty"`
+	Master             MasterSpec         `json:"master,omitempty" yaml:"master,omitempty"`
+	Journal            JournalSpec        `json:"journal,omitempty" yaml:"journal,omitempty"`
+	Worker             WorkerSpec         `json:"worker,omitempty" yaml:"worker,omitempty"`
+	Pagestore          PagestoreSpec      `json:"pagestore,omitempty" yaml:"pagestore,omitempty"`
+	Metastore          MetastoreSpec      `json:"metastore,omitempty" yaml:"metastore,omitempty"`
+	Proxy              ProxySpec          `json:"proxy,omitempty" yaml:"proxy,omitempty"`
+	Fuse               FuseSpec           `json:"fuse,omitempty" yaml:"fuse,omitempty"`
+	Metrics            MetricsSpec        `json:"metrics,omitempty" yaml:"metrics,omitempty"`
+	AlluxioMonitor     AlluxioMonitorSpec `json:"alluxio-monitor,omitempty" yaml:"alluxio-monitor,omitempty"`
 }
 
 type HostAlias struct {
@@ -244,6 +245,10 @@ type Slf4jSinkSpec struct {
 	FilterRegex string `json:"filterRegex,omitempty" yaml:"filterRegex,omitempty"`
 	Period      int    `json:"period,omitempty" yaml:"period,omitempty"`
 	Unit        string `json:"unit,omitempty" yaml:"unit,omitempty"`
+}
+
+type AlluxioMonitorSpec struct {
+	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 }
 
 // +kubebuilder:object:root=true

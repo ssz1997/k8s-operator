@@ -415,3 +415,6 @@ metrics:
     #   prometheus.io/workerPort: "30000"
     #   prometheus.io/path: "/metrics/prometheus/"
     podAnnotations: {}
+
+alluxio-monitor:
+  enabled: false
