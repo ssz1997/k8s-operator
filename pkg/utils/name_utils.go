@@ -24,41 +24,41 @@ import (
 func GetMasterStatefulSetNamespacedName(nameOverride string, clusterNamespacedName types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: clusterNamespacedName.Namespace,
-		Name:      fmt.Sprintf("%s-master", getClusterFullName(nameOverride, clusterNamespacedName.Name)),
+		Name:      fmt.Sprintf("%s-master", GetClusterFullName(nameOverride, clusterNamespacedName.Name)),
 	}
 }
 
 func GetWorkerDeploymentNamespacedName(nameOverride string, clusterNamespacedName types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: clusterNamespacedName.Namespace,
-		Name:      fmt.Sprintf("%s-worker", getClusterFullName(nameOverride, clusterNamespacedName.Name)),
+		Name:      fmt.Sprintf("%s-worker", GetClusterFullName(nameOverride, clusterNamespacedName.Name)),
 	}
 }
 
 func GetFuseDaemonSetNamespacedName(nameOverride string, clusterNamespacedName types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: clusterNamespacedName.Namespace,
-		Name:      fmt.Sprintf("%s-fuse", getClusterFullName(nameOverride, clusterNamespacedName.Name)),
+		Name:      fmt.Sprintf("%s-fuse", GetClusterFullName(nameOverride, clusterNamespacedName.Name)),
 	}
 }
 
 func GetProxyDaemonSetNamespacedName(nameOverride string, clusterNamespacedName types.NamespacedName) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: clusterNamespacedName.Namespace,
-		Name:      fmt.Sprintf("%s-proxy", getClusterFullName(nameOverride, clusterNamespacedName.Name)),
+		Name:      fmt.Sprintf("%s-proxy", GetClusterFullName(nameOverride, clusterNamespacedName.Name)),
 	}
 }
 
 func GetAlluxioConfigMapName(nameOverride, clusterName string) string {
-	return fmt.Sprintf("%s-alluxio-conf", getClusterFullName(nameOverride, clusterName))
+	return fmt.Sprintf("%s-alluxio-conf", GetClusterFullName(nameOverride, clusterName))
 }
 
 func GetLoadConfigmapName(nameOverride, clusterName string) string {
-	return fmt.Sprintf("%s-alluxio-load", getClusterFullName(nameOverride, clusterName))
+	return fmt.Sprintf("%s-alluxio-load", GetClusterFullName(nameOverride, clusterName))
 }
 
 func GetUpdateConfigmapName(nameOverride, clusterName string) string {
-	return fmt.Sprintf("%s-alluxio-update", getClusterFullName(nameOverride, clusterName))
+	return fmt.Sprintf("%s-alluxio-update", GetClusterFullName(nameOverride, clusterName))
 }
 
 func GetLoadJobName(loadName string) string {
@@ -69,8 +69,8 @@ func GetUpdateJobName(updateName string) string {
 	return fmt.Sprintf("%s-update-job", updateName)
 }
 
-// The same function that constructs alluxio.fullName in helm chart
-func getClusterFullName(nameOverride, helmReleaseName string) string {
+// GetClusterFullName The same function that constructs alluxio.fullName in helm chart
+func GetClusterFullName(nameOverride, helmReleaseName string) string {
 	if nameOverride == "" {
 		nameOverride = "alluxio"
 	} else {
