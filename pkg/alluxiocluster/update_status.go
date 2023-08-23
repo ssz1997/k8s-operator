@@ -15,7 +15,7 @@ import (
 	"reflect"
 	"time"
 
-	v1 "k8s.io/api/apps/v1"
+	"github.com/jinzhu/copier"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -69,63 +69,29 @@ func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result,
 }
 
 func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
-	master, err := GetMasterStatus(ctx)
+	componentStatusReqCtx := utils.ComponentStatusReqCtx{}
+	copier.Copy(&componentStatusReqCtx, &ctx)
+	master, err := utils.GetMasterStatus(componentStatusReqCtx)
 	if err != nil || master.Status.AvailableReplicas != master.Status.Replicas {
 		return false
 	}
-	worker, err := GetWorkerStatus(ctx)
+	worker, err := utils.GetWorkerStatus(componentStatusReqCtx)
 	if err != nil || worker.Status.AvailableReplicas != worker.Status.Replicas {
 		return false
 	}
 	if ctx.AlluxioCluster.Spec.Fuse.Enabled {
-		fuse, err := GetFuseStatus(ctx)
+		fuse, err := utils.GetFuseStatus(componentStatusReqCtx)
 		if err != nil || fuse.Status.NumberAvailable != fuse.Status.DesiredNumberScheduled {
 			return false
 		}
 	}
 	if ctx.AlluxioCluster.Spec.Proxy.Enabled {
-		proxy, err := GetProxyStatus(ctx)
+		proxy, err := utils.GetProxyStatus(componentStatusReqCtx)
 		if err != nil || proxy.Status.NumberAvailable != proxy.Status.DesiredNumberScheduled {
 			return false
 		}
 	}
 	return true
-}
-
-func GetMasterStatus(ctx AlluxioClusterReconcileReqCtx) (*v1.StatefulSet, error) {
-	master := &v1.StatefulSet{}
-	if err := ctx.Get(ctx.Context, utils.GetMasterStatefulSetNamespacedName(ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), master); err != nil {
-		logger.Errorf("Error getting Alluxio master StatefulSet from k8s api server: %v", err)
-		return nil, err
-	}
-	return master, nil
-}
-
-func GetWorkerStatus(ctx AlluxioClusterReconcileReqCtx) (*v1.Deployment, error) {
-	worker := &v1.Deployment{}
-	if err := ctx.Get(ctx.Context, utils.GetWorkerDeploymentNamespacedName(ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), worker); err != nil {
-		logger.Errorf("Error getting Alluxio worker Deployment from k8s api server: %v", err)
-		return nil, err
-	}
-	return worker, nil
-}
-
-func GetFuseStatus(ctx AlluxioClusterReconcileReqCtx) (*v1.DaemonSet, error) {
-	fuse := &v1.DaemonSet{}
-	if err := ctx.Get(ctx.Context, utils.GetFuseDaemonSetNamespacedName(ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), fuse); err != nil {
-		logger.Errorf("Error getting Alluxio fuse DaemonSet from k8s api server: %v", err)
-		return nil, err
-	}
-	return fuse, nil
-}
-
-func GetProxyStatus(ctx AlluxioClusterReconcileReqCtx) (*v1.DaemonSet, error) {
-	proxy := &v1.DaemonSet{}
-	if err := ctx.Get(ctx.Context, utils.GetProxyDaemonSetNamespacedName(ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), proxy); err != nil {
-		logger.Errorf("Error getting Alluxio proxy DaemonSet from k8s api server: %v", err)
-		return nil, err
-	}
-	return proxy, nil
 }
 
 func updateDatasetStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) error {

@@ -40,6 +40,10 @@ func Infof(format string, args ...interface{}) {
 	sugarZapLog.Infof(format, args)
 }
 
+func Warnf(format string, args ...interface{}) {
+	sugarZapLog.Warnf(format, args)
+}
+
 func Errorf(format string, args ...interface{}) {
 	sugarZapLog.Errorf(format, args)
 }
