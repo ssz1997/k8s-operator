@@ -57,8 +57,16 @@ func GetLoadConfigmapName(nameOverride, clusterName string) string {
 	return fmt.Sprintf("%s-alluxio-load", getClusterFullName(nameOverride, clusterName))
 }
 
+func GetUpdateConfigmapName(nameOverride, clusterName string) string {
+	return fmt.Sprintf("%s-alluxio-update", getClusterFullName(nameOverride, clusterName))
+}
+
 func GetLoadJobName(loadName string) string {
 	return fmt.Sprintf("%s-load-job", loadName)
+}
+
+func GetUpdateJobName(updateName string) string {
+	return fmt.Sprintf("%s-update-job", updateName)
 }
 
 // The same function that constructs alluxio.fullName in helm chart
