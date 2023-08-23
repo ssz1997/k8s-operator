@@ -29,6 +29,7 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/dataset"
 	"github.com/alluxio/k8s-operator/pkg/load"
 	"github.com/alluxio/k8s-operator/pkg/logger"
+	"github.com/alluxio/k8s-operator/pkg/update"
 )
 
 var (
@@ -72,6 +73,14 @@ func startDatasetManager() {
 		Scheme: manager.GetScheme(),
 	}).SetupWithManager(manager); err != nil {
 		logger.Fatalf("unable to create Load controller: %v", err)
+		os.Exit(1)
+	}
+
+	if err = (&update.UpdateReconciler{
+		Client: manager.GetClient(),
+		Scheme: manager.GetScheme(),
+	}).SetupWithManager(manager); err != nil {
+		logger.Fatalf("unable to create Update controller: %v", err)
 		os.Exit(1)
 	}
 
