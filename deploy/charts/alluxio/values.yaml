@@ -298,6 +298,9 @@ fuse:
   enabled: false
   # The path on the host machine for storing fuse log
   hostPathForLogs: /mnt/alluxio/logs/fuse
+  # User and Group that override the global value
+  user: 1000
+  group: 1000
   # Extra environment variables for the Alluxio fuse pods. Format:
   # env:
   #   <key1>: <value1>
