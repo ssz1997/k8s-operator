@@ -958,6 +958,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  group:
+                    type: string
                   jvmOptions:
                     items:
                       type: string
@@ -1009,6 +1011,8 @@ spec:
                       - value
                       type: object
                     type: array
+                  user:
+                    type: string
                 type: object
               group:
                 type: string
