@@ -112,6 +112,13 @@ spec:
               mountPath: /mnt/alluxio
             - name: dummy-alluxio-fuse-log-volume
               mountPath: /opt/alluxio/logs
+        - name: create-alluxio-fuse-dir
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          command: [ "mkdir", "-p", /mnt/alluxio/fuse]
+          volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: /mnt/alluxio
         - name: wait-master
           image: dummy/dummy:dummy
           command: ["/bin/sh", "-c"]
@@ -133,14 +140,10 @@ spec:
             requests:
               cpu: 0.5
               memory: 1Gi
-          command: ["/entrypoint.sh"]
+          command: ["/bin/sh", "-c"]
           args:
-            - fuse
-            - /dummy/dataset/path
-            - /mnt/alluxio/fuse
-            - -o allow_other
-            - -o entry_timeout=3600
-            - -o attr_timeout=3600
+            - umount -l /mnt/alluxio/fuse;
+              /entrypoint.sh fuse /dummy/dataset/path /mnt/alluxio/fuse -o allow_other -o entry_timeout=3600 -o attr_timeout=3600
           env:
             - name: ALLUXIO_CLIENT_HOSTNAME
               valueFrom:
@@ -155,7 +158,7 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", /mnt/alluxio/fuse]
+                command: ["fusermount", "-u", /mnt/alluxio/fuse]
           volumeMounts:
             - name: alluxio-fuse-mount
               mountPath: /mnt/alluxio
