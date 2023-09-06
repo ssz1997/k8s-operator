@@ -154,6 +154,8 @@ spec:
             - name: "fuseEnvKey2"
               value: "fuseEnvVal2"
           securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
             privileged: true # required by bidirectional mount
           lifecycle:
             preStop:
