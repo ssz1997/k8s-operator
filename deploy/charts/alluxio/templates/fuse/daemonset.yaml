@@ -142,6 +142,8 @@ spec:
               value: "{{ $value }}"
             {{- end }}
           securityContext:
+            runAsUser: {{ .Values.fuse.user }}
+            runAsGroup: {{ .Values.fuse.group }}
             privileged: true # required by bidirectional mount
           lifecycle:
             preStop:
