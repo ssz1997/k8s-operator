@@ -87,6 +87,16 @@ func (in *AlluxioClusterSpec) DeepCopyInto(out *AlluxioClusterSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.User != nil {
+		in, out := &in.User, &out.User
+		*out = new(int)
+		**out = **in
+	}
+	if in.Group != nil {
+		in, out := &in.Group, &out.Group
+		*out = new(int)
+		**out = **in
+	}
 	if in.HostAliases != nil {
 		in, out := &in.HostAliases, &out.HostAliases
 		*out = make([]HostAlias, len(*in))
@@ -389,6 +399,11 @@ func (in *FuseSpec) DeepCopyInto(out *FuseSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.Group != nil {
+		in, out := &in.Group, &out.Group
+		*out = new(int)
+		**out = **in
+	}
 	if in.JvmOptions != nil {
 		in, out := &in.JvmOptions, &out.JvmOptions
 		*out = make([]string, len(*in))
@@ -418,6 +433,11 @@ func (in *FuseSpec) DeepCopyInto(out *FuseSpec) {
 		in, out := &in.Tolerations, &out.Tolerations
 		*out = make([]Toleration, len(*in))
 		copy(*out, *in)
+	}
+	if in.User != nil {
+		in, out := &in.User, &out.User
+		*out = new(int)
+		**out = **in
 	}
 }
 

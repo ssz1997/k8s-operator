@@ -26,8 +26,8 @@ type AlluxioClusterSpec struct {
 	ImageTag           string             `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
 	ImagePullPolicy    string             `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
 	ImagePullSecrets   []string           `json:"imagePullSecrets,omitempty" yaml:"imagePullSecrets,omitempty"`
-	User               string             `json:"user,omitempty" yaml:"user,omitempty"`
-	Group              string             `json:"group,omitempty" yaml:"group,omitempty"`
+	User               *int               `json:"user,omitempty" yaml:"user,omitempty"`
+	Group              *int               `json:"group,omitempty" yaml:"group,omitempty"`
 	FsGroup            string             `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
 	HostNetwork        bool               `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
 	DnsPolicy          string             `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
@@ -140,14 +140,14 @@ type FuseSpec struct {
 	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
 	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
-	Group          string            `json:"group,omitempty" yaml:"group,omitempty"`
+	Group          *int              `json:"group,omitempty" yaml:"group,omitempty"`
 	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
 	MountOptions   []string          `json:"mountOptions,omitempty" yaml:"mountOptions,omitempty"`
 	NodeSelector   map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
 	Resources      ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
 	Tolerations    []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
-	User           string            `json:"user,omitempty" yaml:"user,omitempty"`
+	User           *int              `json:"user,omitempty" yaml:"user,omitempty"`
 }
 
 type ControllerPluginSpec struct {

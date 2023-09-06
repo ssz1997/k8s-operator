@@ -959,7 +959,7 @@ spec:
                       type: string
                     type: object
                   group:
-                    type: string
+                    type: integer
                   jvmOptions:
                     items:
                       type: string
@@ -1012,10 +1012,10 @@ spec:
                       type: object
                     type: array
                   user:
-                    type: string
+                    type: integer
                 type: object
               group:
-                type: string
+                type: integer
               hostAliases:
                 items:
                   properties:
@@ -3114,7 +3114,7 @@ spec:
                   type: object
                 type: array
               user:
-                type: string
+                type: integer
               worker:
                 properties:
                   affinity:
