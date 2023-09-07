@@ -74,8 +74,8 @@ spec:
 {{ toYaml .Values.tolerations | trim | indent 8  }}
       {{- end }}
       securityContext:
-        runAsUser: {{ .Values.user }}
-        runAsGroup: {{ .Values.group }}
+        runAsUser: {{ .Values.fuse.user }}
+        runAsGroup: {{ .Values.fuse.group }}
         fsGroup: {{ .Values.fsGroup }}
       {{- if .Values.serviceAccountName }}
       serviceAccountName: {{ .Values.serviceAccountName }}
@@ -92,7 +92,7 @@ spec:
             runAsGroup: 0
           command: [ "chown", "-R" ]
           args:
-            - {{ .Values.user }}:{{ .Values.group }}
+            - {{ .Values.fuse.user }}:{{ .Values.fuse.group }}
             - {{ $hostMountPath }}
             {{- if .Values.hostPathForLogging }}
             - {{ $alluxioFuseLogDir }}
@@ -104,6 +104,13 @@ spec:
             - name: {{ $alluxioFuseLogVolumeName }}
               mountPath: {{ $alluxioFuseLogDir }}
             {{- end }}
+        - name: create-alluxio-fuse-dir
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command: [ "mkdir", "-p", {{ $alluxioFuseMountPoint }}]
+          volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: {{ $hostMountPath }}
         - name: wait-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: ["/bin/sh", "-c"]
@@ -121,14 +128,10 @@ spec:
           {{- if .Values.fuse.resources }}
 {{ include "alluxio.resources" .Values.fuse.resources | indent 10 }}
           {{- end }}
-          command: ["/entrypoint.sh"]
+          command: ["/bin/sh", "-c"]
           args:
-            - fuse
-            - {{ required "The path of the dataset must be set." .Values.dataset.path }}
-            - {{ $alluxioFuseMountPoint }}
-            {{- range .Values.fuse.mountOptions }}
-            - -o {{ . }}
-            {{- end }}
+            - umount -l {{ $alluxioFuseMountPoint }};
+              /entrypoint.sh fuse {{ required "The path of the dataset must be set." .Values.dataset.path }} {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
           env:
             - name: ALLUXIO_CLIENT_HOSTNAME
               valueFrom:
@@ -139,11 +142,13 @@ spec:
               value: "{{ $value }}"
             {{- end }}
           securityContext:
+            runAsUser: {{ .Values.fuse.user }}
+            runAsGroup: {{ .Values.fuse.group }}
             privileged: true # required by bidirectional mount
           lifecycle:
             preStop:
               exec:
-                command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", {{ $alluxioFuseMountPoint }}]
+                command: ["fusermount", "-u", {{ $alluxioFuseMountPoint }}]
           volumeMounts:
             - name: alluxio-fuse-mount
               mountPath: {{ $hostMountPath }}
