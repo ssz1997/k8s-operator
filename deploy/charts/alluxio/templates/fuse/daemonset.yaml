@@ -92,7 +92,7 @@ spec:
             runAsGroup: 0
           command: [ "chown", "-R" ]
           args:
-            - {{ .Values.fuse.user }}:{{ .Values.fuse.group }}
+            - {{ .Values.user }}:{{ .Values.group }}
             - {{ $hostMountPath }}
             {{- if .Values.hostPathForLogging }}
             - {{ $alluxioFuseLogDir }}
@@ -142,8 +142,6 @@ spec:
               value: "{{ $value }}"
             {{- end }}
           securityContext:
-            runAsUser: {{ .Values.fuse.user }}
-            runAsGroup: {{ .Values.fuse.group }}
             privileged: true # required by bidirectional mount
           lifecycle:
             preStop:
