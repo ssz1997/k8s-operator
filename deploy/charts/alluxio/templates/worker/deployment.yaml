@@ -135,7 +135,10 @@ spec:
           - {{ $alluxioWorkerLogDir }}
           {{- end }}
           {{- if eq .Values.pagestore.type "hostPath" }}
-          - {{ $alluxioWorkerPagestorePath }}
+          {{- $paths := splitList "," .Values.pagestore.hostPath }}
+          {{- range $i, $path := $paths }}
+          - {{ $path }}
+          {{- end }}
           {{- end }}
         volumeMounts:
           {{- if .Values.hostPathForLogging }}
@@ -144,7 +147,6 @@ spec:
           {{- end }}
           {{- if eq .Values.pagestore.type "hostPath" }}
 {{- include "pagestoreHostPathVolumeMounts" . | indent 10 }}
-            mountPath: {{ $alluxioWorkerPagestorePath }}
           {{- end }}
       - name: wait-master
         image: {{ .Values.image }}:{{ .Values.imageTag }}
