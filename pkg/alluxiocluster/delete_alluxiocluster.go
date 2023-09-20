@@ -34,7 +34,7 @@ func DeleteAlluxioClusterIfExist(namespacedName types.NamespacedName) error {
 	return nil
 }
 
-func deleteConfYamlFileIfExist(namespacedName types.NamespacedName) error {
+func DeleteConfYamlFileIfExist(namespacedName types.NamespacedName) error {
 	confYamlFilePath := utils.GetConfYamlPath(namespacedName)
 	if _, err := os.Stat(confYamlFilePath); err != nil {
 		if os.IsNotExist(err) {

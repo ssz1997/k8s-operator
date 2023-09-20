@@ -31,25 +31,25 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func (r *UnloadReconciler) unload(ctx UnloadReconcilerReqCtx) (ctrl.Result, error) {
+func Unload(ctx *UnloadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before starting the command instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and redo the same thing, leading to a confusing state.
-	ctx.Unload.Status.Phase = alluxiov1alpha1.UnloadPhaseUnLoaded
-	_, err := r.updateUnloadStatus(ctx)
+	ctx.Unloader.GetStatus().Phase = alluxiov1alpha1.UnloadPhaseUnLoaded
+	_, err := UpdateUnloadStatus(ctx.Status(), ctx.Unloader)
 	if err != nil {
 		logger.Infof("Unloading is pending because status was not updated successfully")
 		return ctrl.Result{RequeueAfter: 15 * time.Second}, err
 	}
-	r.unloadInternal(ctx)
+	unloadInternal(ctx)
 	return ctrl.Result{}, nil
 }
 
-func (r *UnloadReconciler) unloadInternal(ctx UnloadReconcilerReqCtx) {
+func unloadInternal(ctx *UnloadReconcilerReqCtx) {
 	var workerPodsList corev1.PodList
 	workerListOpts := client.MatchingLabels{
-		"name": fmt.Sprintf("%s-worker", ctx.AlluxioCluster.ObjectMeta.Name),
+		"name": fmt.Sprintf("%s-worker", ctx.AlluxioClusterer.GetName()),
 	}
-	if err := r.List(ctx.Context, &workerPodsList, client.InNamespace(ctx.Namespace), workerListOpts); err != nil {
+	if err := ctx.List(ctx.Context, &workerPodsList, client.InNamespace(ctx.Namespace), workerListOpts); err != nil {
 		logger.Warnf("Failed to get the list of worker pods while trying to delete pages: %v", err)
 	}
 	clientSet, err := utils.GetK8sClient()
@@ -67,9 +67,9 @@ func (r *UnloadReconciler) unloadInternal(ctx UnloadReconcilerReqCtx) {
 	wg.Wait()
 }
 
-func removeAllPagesFromOneWorkerPod(podName string, ctx UnloadReconcilerReqCtx, clientSet *kubernetes.Clientset) {
+func removeAllPagesFromOneWorkerPod(podName string, ctx *UnloadReconcilerReqCtx, clientSet *kubernetes.Clientset) {
 	// Best effort to remove cached pages
-	paths := strings.Split(ctx.AlluxioCluster.Spec.Pagestore.HostPath, ",")
+	paths := strings.Split(ctx.AlluxioClusterer.GetPagestoreSpec().HostPath, ",")
 	for i, path := range paths {
 		paths[i] = fmt.Sprintf("%s/*", path)
 	}

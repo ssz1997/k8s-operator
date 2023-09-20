@@ -20,7 +20,7 @@ import (
 
 const dummyFinalizer = "k8s-operator.alluxio.com/dummyFinalizer"
 
-// Add this finalizer so that we can still access information of the deleted resources.
+// AddDummyFinalizerIfNotExist Add a dummy finalizer so that we can still access information of the deleted resources.
 func AddDummyFinalizerIfNotExist(c client.Client, o client.Object, ctx context.Context) error {
 	if !controllerutil.ContainsFinalizer(o, dummyFinalizer) {
 		controllerutil.AddFinalizer(o, dummyFinalizer)

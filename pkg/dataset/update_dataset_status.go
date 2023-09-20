@@ -21,14 +21,14 @@ import (
 )
 
 func UpdateDatasetStatus(ctx DatasetReconcilerReqCtx) (ctrl.Result, error) {
-	newestDataset := &alluxiov1alpha1.Dataset{}
-	if err := ctx.Get(ctx, ctx.NamespacedName, newestDataset); err != nil {
-		logger.Errorf("Error getting newest dataset status: %v", err)
+	dataset := &alluxiov1alpha1.Dataset{}
+	if err := ctx.Get(ctx, ctx.NamespacedName, dataset); err != nil {
+		logger.Errorf("Error getting the most up-to-date dataset status: %v", err)
 		return ctrl.Result{}, err
 	}
-	if !reflect.DeepEqual(newestDataset.Status, ctx.Dataset.Status) {
-		newestDataset.Status = ctx.Dataset.Status
-		if err := ctx.Client.Status().Update(ctx.Context, newestDataset); err != nil {
+	if !reflect.DeepEqual(dataset.Status, ctx.Datasetter.GetStatus()) {
+		dataset.Status = *ctx.Datasetter.GetStatus()
+		if err := ctx.Client.Status().Update(ctx.Context, dataset); err != nil {
 			logger.Errorf("Error updating dataset %s status: %v", ctx.NamespacedName.String(), err)
 			return ctrl.Result{}, err
 		}

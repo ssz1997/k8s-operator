@@ -22,6 +22,8 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	alluxioClusterer "github.com/alluxio/k8s-operator/pkg/alluxiocluster"
+	datasetter "github.com/alluxio/k8s-operator/pkg/dataset"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
@@ -31,29 +33,24 @@ type UnloadReconciler struct {
 }
 
 type UnloadReconcilerReqCtx struct {
-	*alluxiov1alpha1.AlluxioCluster
-	*alluxiov1alpha1.Unload
+	alluxioClusterer.AlluxioClusterer
+	Unloader
 	client.Client
 	context.Context
 	types.NamespacedName
 }
 
 func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
-	ctx := UnloadReconcilerReqCtx{
+	ctx := &UnloadReconcilerReqCtx{
 		Client:         r.Client,
 		Context:        context,
 		NamespacedName: req.NamespacedName,
 	}
 	unload := &alluxiov1alpha1.Unload{}
-	if err := r.Get(context, req.NamespacedName, unload); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Infof("Unload object %v in namespace %v not found. It is being deleted or already deleted.", req.Name, req.Namespace)
-		} else {
-			logger.Errorf("Failed to get unload job %v in namespace %v: %v", req.Name, req.Namespace, err)
-			return ctrl.Result{}, err
-		}
+	ctx.Unloader = unload
+	if err := GetUnLoadFromK8sApiServer(r, req.NamespacedName, unload); err != nil {
+		return ctrl.Result{}, err
 	}
-	ctx.Unload = unload
 
 	if unload.ObjectMeta.UID == "" {
 		return ctrl.Result{}, nil
@@ -62,45 +59,50 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      unload.Spec.Dataset,
+		Name:      unload.GetUnloadDatasetName(),
 	}
-	if err := r.Get(context, datasetNamespacedName, dataset); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Errorf("Dataset %s is not found. Please double check your configuration.", unload.Spec.Dataset)
-			unload.Status.Phase = alluxiov1alpha1.UnloadPhaseNotExist
-			return r.updateUnloadStatus(ctx)
-		} else {
-			logger.Errorf("Error getting dataset %s: %v", unload.Spec.Dataset, err)
-			return ctrl.Result{}, err
-		}
+	if err := datasetter.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
+		logger.Errorf("dataset %s is not ready so cannot be unloaded.")
 		unload.Status.Phase = alluxiov1alpha1.UnloadPhaseNotExist
-		return r.updateUnloadStatus(ctx)
+		return UpdateUnloadStatus(r, unload)
 	}
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
+	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
 		Name:      dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := r.Get(context, alluxioNamespacedName, alluxioCluster); err != nil {
-		logger.Errorf("Error getting alluxio cluster %s: %v", alluxioNamespacedName.Name, err)
+	if err := alluxioClusterer.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
-	ctx.AlluxioCluster = alluxioCluster
 
 	switch unload.Status.Phase {
 	case alluxiov1alpha1.UnloadPhaseNone, alluxiov1alpha1.UnloadPhaseNotExist:
-		return r.unload(ctx)
+		return Unload(ctx)
 	default:
 		return ctrl.Result{}, nil
 	}
 }
 
-func (r *UnloadReconciler) updateUnloadStatus(ctx UnloadReconcilerReqCtx) (ctrl.Result, error) {
-	if err := r.Client.Status().Update(ctx.Context, ctx.Unload); err != nil {
+func GetUnLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, unload Unloader) error {
+	if err := r.Get(context.TODO(), namespacedName, unload); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Infof("Unload object %v not found. It is being deleted or already deleted.", namespacedName.String())
+		} else {
+			logger.Errorf("Failed to get unload job %v: %v", namespacedName.String(), err)
+			return err
+		}
+	}
+	return nil
+}
+
+func UpdateUnloadStatus(sw client.StatusWriter, unload Unloader) (ctrl.Result, error) {
+	if err := sw.Update(context.TODO(), unload); err != nil {
 		logger.Errorf("Failed updating unload job status: %v", err)
 		return ctrl.Result{}, err
 	}

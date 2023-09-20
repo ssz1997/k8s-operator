@@ -22,15 +22,16 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/alluxiocluster"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func (r *LoadReconciler) createLoadJob(ctx LoadReconcilerReqCtx) (ctrl.Result, error) {
+func CreateLoadJob(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseLoading
-	_, err := r.updateLoadStatus(ctx)
+	ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoading
+	_, err := UpdateLoadStatus(ctx.Status(), ctx.Loader)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
 		return ctrl.Result{}, err
@@ -39,8 +40,8 @@ func (r *LoadReconciler) createLoadJob(ctx LoadReconcilerReqCtx) (ctrl.Result, e
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	constructLoadJob(ctx.AlluxioCluster, ctx.Load, loadJob)
-	if err := r.Create(ctx.Context, loadJob); err != nil {
+	constructLoadJob(ctx.AlluxioClusterer, ctx.Loader, loadJob)
+	if err := ctx.Create(ctx.Context, loadJob); err != nil {
 		logger.Errorf("Failed to load data of dataset %s: %v", ctx.NamespacedName.String(), err)
 		return ctrl.Result{}, err
 	}
@@ -60,20 +61,20 @@ func getLoadJobFromYaml() (*batchv1.Job, error) {
 	return loadJob.(*batchv1.Job), nil
 }
 
-func constructLoadJob(alluxio *alluxiov1alpha1.AlluxioCluster, load *alluxiov1alpha1.Load, loadJob *batchv1.Job) {
-	loadJob.Name = utils.GetLoadJobName(load.Name)
-	loadJob.Namespace = alluxio.Namespace
+func constructLoadJob(alluxio alluxiocluster.AlluxioClusterer, load Loader, loadJob *batchv1.Job) {
+	loadJob.Name = utils.GetLoadJobName(load.GetName())
+	loadJob.Namespace = alluxio.GetNamespace()
 	var imagePullSecrets []corev1.LocalObjectReference
-	for _, secret := range alluxio.Spec.ImagePullSecrets {
+	for _, secret := range alluxio.GetImagePullSecrets() {
 		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{Name: secret})
 
 	}
 	loadJob.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
-	loadJob.Spec.Template.Spec.ServiceAccountName = alluxio.Spec.ServiceAccountName
-	loadJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.Spec.Image, alluxio.Spec.ImageTag)
-	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/load.go", load.Spec.Path}
-	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name)
-	loadConfigMapName := utils.GetLoadConfigmapName(alluxio.Spec.NameOverride, alluxio.Name)
+	loadJob.Spec.Template.Spec.ServiceAccountName = alluxio.GetServiceAccountName()
+	loadJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.GetImage(), alluxio.GetImageTag())
+	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/load.go", load.GetLoadPath()}
+	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.GetNameOverride(), alluxio.GetName())
+	loadConfigMapName := utils.GetLoadConfigmapName(alluxio.GetNameOverride(), alluxio.GetName())
 	loadJob.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 		{
 			Name:      alluxioConfigMapName,

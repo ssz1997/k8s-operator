@@ -25,12 +25,12 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result, error) {
-	alluxioOriginalStatusCopy := alluxioClusterCtx.AlluxioCluster.Status.DeepCopy()
-	datasetOriginalStatusCopy := alluxioClusterCtx.Dataset.Status.DeepCopy()
+func UpdateStatus(alluxioClusterCtx *AlluxioClusterReconcileReqCtx) (ctrl.Result, error) {
+	alluxioOriginalStatusCopy := (*alluxioClusterCtx.AlluxioClusterer.GetStatus()).DeepCopy()
+	datasetOriginalStatusCopy := (*alluxioClusterCtx.Datasetter.GetStatus()).DeepCopy()
 
-	alluxioClusterNewPhase := alluxioOriginalStatusCopy.Phase
-	datasetNewPhase := alluxioClusterCtx.Dataset.Status.Phase
+	var alluxioClusterNewPhase alluxiov1alpha1.ClusterPhase
+	var datasetNewPhase alluxiov1alpha1.DatasetPhase
 
 	if datasetOriginalStatusCopy.Phase == alluxiov1alpha1.DatasetPhaseNotExist {
 		alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhasePending
@@ -41,22 +41,22 @@ func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result,
 		if ClusterReady(alluxioClusterCtx) {
 			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseReady
 			datasetNewPhase = alluxiov1alpha1.DatasetPhaseReady
-			alluxioClusterCtx.Dataset.Status.BoundedAlluxioCluster = alluxioClusterCtx.AlluxioCluster.Name
+			alluxioClusterCtx.Datasetter.GetStatus().BoundedAlluxioCluster = alluxioClusterCtx.AlluxioClusterer.GetName()
 		} else {
 			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseCreatingOrUpdating
 			datasetNewPhase = alluxiov1alpha1.DatasetPhaseBounding
 		}
 	}
-	alluxioClusterCtx.AlluxioCluster.Status.Phase = alluxioClusterNewPhase
-	alluxioClusterCtx.Dataset.Status.Phase = datasetNewPhase
+	alluxioClusterCtx.AlluxioClusterer.GetStatus().Phase = alluxioClusterNewPhase
+	alluxioClusterCtx.Datasetter.GetStatus().Phase = datasetNewPhase
 
-	if !reflect.DeepEqual(alluxioOriginalStatusCopy, alluxioClusterCtx.AlluxioCluster.Status) {
-		if err := alluxioClusterCtx.Client.Status().Update(alluxioClusterCtx.Context, alluxioClusterCtx.AlluxioCluster); err != nil {
+	if !reflect.DeepEqual(alluxioOriginalStatusCopy, alluxioClusterCtx.AlluxioClusterer.GetStatus()) {
+		if err := alluxioClusterCtx.Client.Status().Update(alluxioClusterCtx.Context, alluxioClusterCtx.AlluxioClusterer); err != nil {
 			logger.Errorf("Error updating cluster status: %v", err)
 			return ctrl.Result{}, err
 		}
 	}
-	if !reflect.DeepEqual(*datasetOriginalStatusCopy, alluxioClusterCtx.Dataset.Status) {
+	if !reflect.DeepEqual(*datasetOriginalStatusCopy, alluxioClusterCtx.Datasetter.GetStatus()) {
 		if err := updateDatasetStatus(alluxioClusterCtx); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -68,7 +68,7 @@ func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result,
 	return ctrl.Result{RequeueAfter: 2 * time.Minute}, nil
 }
 
-func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
+func ClusterReady(ctx *AlluxioClusterReconcileReqCtx) bool {
 	componentStatusReqCtx := utils.ComponentStatusReqCtx{}
 	copier.Copy(&componentStatusReqCtx, &ctx)
 	master, err := utils.GetMasterStatus(componentStatusReqCtx)
@@ -79,13 +79,13 @@ func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
 	if err != nil || worker.Status.AvailableReplicas != worker.Status.Replicas {
 		return false
 	}
-	if ctx.AlluxioCluster.Spec.Fuse.Enabled != nil && *ctx.AlluxioCluster.Spec.Fuse.Enabled {
+	if ctx.AlluxioClusterer.GetFuseSpec().Enabled != nil && *ctx.AlluxioClusterer.GetFuseSpec().Enabled {
 		fuse, err := utils.GetFuseStatus(componentStatusReqCtx)
 		if err != nil || fuse.Status.NumberAvailable != fuse.Status.DesiredNumberScheduled {
 			return false
 		}
 	}
-	if ctx.AlluxioCluster.Spec.Proxy.Enabled != nil && *ctx.AlluxioCluster.Spec.Proxy.Enabled {
+	if ctx.AlluxioClusterer.GetProxySpec().Enabled != nil && *ctx.AlluxioClusterer.GetProxySpec().Enabled {
 		proxy, err := utils.GetProxyStatus(componentStatusReqCtx)
 		if err != nil || proxy.Status.NumberAvailable != proxy.Status.DesiredNumberScheduled {
 			return false
@@ -94,13 +94,13 @@ func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
 	return true
 }
 
-func updateDatasetStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) error {
+func updateDatasetStatus(alluxioClusterCtx *AlluxioClusterReconcileReqCtx) error {
 	datasetCtx := dataset.DatasetReconcilerReqCtx{
-		Dataset: alluxioClusterCtx.Dataset,
-		Client:  alluxioClusterCtx.Client,
-		Context: alluxioClusterCtx.Context,
+		Datasetter: alluxioClusterCtx.Datasetter,
+		Client:     alluxioClusterCtx.Client,
+		Context:    alluxioClusterCtx.Context,
 		NamespacedName: types.NamespacedName{
-			Name:      alluxioClusterCtx.Dataset.Name,
+			Name:      alluxioClusterCtx.AlluxioClusterer.GetDatasetName(),
 			Namespace: alluxioClusterCtx.Namespace,
 		},
 	}

@@ -22,7 +22,7 @@ import (
 
 const chartPath = "/opt/charts/alluxio"
 
-func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
+func CreateAlluxioClusterIfNotExist(ctx *AlluxioClusterReconcileReqCtx) error {
 	// if the release has already been deployed, requeue without further actions
 	helmCtx := utils.HelmContext{
 		Namespace:   ctx.Namespace,
@@ -38,7 +38,7 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 
 	logger.Infof("Creating Alluxio cluster %s.", ctx.NamespacedName.String())
 	// Construct config.yaml file
-	clusterYaml, err := yaml.Marshal(ctx.AlluxioCluster.Spec)
+	clusterYaml, err := ctx.AlluxioClusterer.GetSpecJson()
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 		logger.Errorf("Error writing to config file: %v", err)
 		return err
 	}
-	datasetYalm, err := yaml.Marshal(ctx.Dataset.Spec)
+	datasetYalm, err := yaml.Marshal(ctx.Datasetter.GetConf())
 	if err != nil {
 		return err
 	}
