@@ -55,6 +55,7 @@ spec:
               alluxio-monitor:
                 properties:
                   enabled:
+                    default: false
                     type: boolean
                 type: object
               configMaps:
@@ -953,6 +954,7 @@ spec:
                         type: object
                     type: object
                   enabled:
+                    default: false
                     type: boolean
                   env:
                     additionalProperties:
@@ -1031,6 +1033,7 @@ spec:
                   type: object
                 type: array
               hostNetwork:
+                default: false
                 type: boolean
               image:
                 type: string
@@ -1047,6 +1050,7 @@ spec:
                   hostPath:
                     type: string
                   runFormat:
+                    default: false
                     type: boolean
                   size:
                     type: string
@@ -1932,6 +1936,7 @@ spec:
                   count:
                     type: integer
                   enabled:
+                    default: true
                     type: boolean
                   env:
                     additionalProperties:
@@ -2031,6 +2036,7 @@ spec:
               metastore:
                 properties:
                   enabled:
+                    default: false
                     type: boolean
                   size:
                     type: string
@@ -2042,6 +2048,7 @@ spec:
                   consoleSink:
                     properties:
                       enabled:
+                        default: false
                         type: boolean
                       period:
                         type: integer
@@ -2053,6 +2060,7 @@ spec:
                       directory:
                         type: string
                       enabled:
+                        default: false
                         type: boolean
                       period:
                         type: integer
@@ -2062,6 +2070,7 @@ spec:
                   graphiteSink:
                     properties:
                       enabled:
+                        default: false
                         type: boolean
                       hostname:
                         type: string
@@ -2079,11 +2088,13 @@ spec:
                       domain:
                         type: string
                       enabled:
+                        default: false
                         type: boolean
                     type: object
                   prometheusMetricsServlet:
                     properties:
                       enabled:
+                        default: false
                         type: boolean
                       podAnnotations:
                         additionalProperties:
@@ -2093,6 +2104,7 @@ spec:
                   slf4jSink:
                     properties:
                       enabled:
+                        default: false
                         type: boolean
                       filterClass:
                         type: string
@@ -2115,6 +2127,7 @@ spec:
                   hostPath:
                     type: string
                   memoryBacked:
+                    default: false
                     type: boolean
                   quota:
                     type: string
@@ -2998,6 +3011,7 @@ spec:
                         type: object
                     type: object
                   enabled:
+                    default: false
                     type: boolean
                   env:
                     additionalProperties:
@@ -3996,6 +4010,7 @@ spec:
                       type: string
                     type: array
                   limitOneWorkerPerNode:
+                    default: true
                     type: boolean
                   livenessProbe:
                     properties:

@@ -20,15 +20,16 @@ import (
 
 // AlluxioClusterSpec defines the desired state of AlluxioCluster
 type AlluxioClusterSpec struct {
-	NameOverride       string             `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
-	Dataset            string             `json:"dataset" yaml:"dataset"`
-	Image              string             `json:"image,omitempty" yaml:"image,omitempty"`
-	ImageTag           string             `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
-	ImagePullPolicy    string             `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
-	ImagePullSecrets   []string           `json:"imagePullSecrets,omitempty" yaml:"imagePullSecrets,omitempty"`
-	User               *int               `json:"user,omitempty" yaml:"user,omitempty"`
-	Group              *int               `json:"group,omitempty" yaml:"group,omitempty"`
-	FsGroup            string             `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
+	NameOverride     string   `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
+	Dataset          string   `json:"dataset" yaml:"dataset"`
+	Image            string   `json:"image,omitempty" yaml:"image,omitempty"`
+	ImageTag         string   `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
+	ImagePullPolicy  string   `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
+	ImagePullSecrets []string `json:"imagePullSecrets,omitempty" yaml:"imagePullSecrets,omitempty"`
+	User             *int     `json:"user,omitempty" yaml:"user,omitempty"`
+	Group            *int     `json:"group,omitempty" yaml:"group,omitempty"`
+	FsGroup          string   `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
+	// +kubebuilder:default=false
 	HostNetwork        bool               `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
 	DnsPolicy          string             `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
 	ServiceAccountName string             `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
@@ -71,8 +72,9 @@ type MountSpec struct {
 }
 
 type MasterSpec struct {
-	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
-	Count          int               `json:"count,omitempty" yaml:"count,omitempty"`
+	Affinity corev1.Affinity `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Count    int             `json:"count,omitempty" yaml:"count,omitempty"`
+	// +kubebuilder:default=true
 	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
 	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
@@ -87,7 +89,8 @@ type MasterSpec struct {
 }
 
 type JournalSpec struct {
-	HostPath     string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	HostPath string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	// +kubebuilder:default=false
 	RunFormat    bool   `json:"runFormat,omitempty" yaml:"runFormat,omitempty"`
 	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
 	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
@@ -95,10 +98,11 @@ type JournalSpec struct {
 }
 
 type WorkerSpec struct {
-	Affinity              corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
-	Count                 int               `json:"count,omitempty" yaml:"count,omitempty"`
-	Env                   map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
-	JvmOptions            []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	Affinity   corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Count      int               `json:"count,omitempty" yaml:"count,omitempty"`
+	Env        map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	JvmOptions []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	// +kubebuilder:default=true
 	LimitOneWorkerPerNode bool              `json:"limitOneWorkerPerNode,omitempty" yaml:"limitOneWorkerPerNode,omitempty"`
 	LivenessProbe         ProbeSpec         `json:"livenessProbe,omitempty" yaml:"livenessProbe,omitempty"`
 	NodeSelector          map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
@@ -111,7 +115,8 @@ type WorkerSpec struct {
 }
 
 type PagestoreSpec struct {
-	HostPath     string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	HostPath string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	// +kubebuilder:default=false
 	MemoryBacked bool   `json:"memoryBacked,omitempty" yaml:"memoryBacked,omitempty"`
 	Quota        string `json:"quota,omitempty" yaml:"quota,omitempty"`
 	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
@@ -119,13 +124,15 @@ type PagestoreSpec struct {
 }
 
 type MetastoreSpec struct {
+	// +kubebuilder:default=false
 	Enabled      bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
 	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
 }
 
 type ProxySpec struct {
-	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Affinity corev1.Affinity `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	// +kubebuilder:default=false
 	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
 	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
@@ -137,7 +144,8 @@ type ProxySpec struct {
 }
 
 type FuseSpec struct {
-	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Affinity corev1.Affinity `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	// +kubebuilder:default=false
 	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
 	Group          *int              `json:"group,omitempty" yaml:"group,omitempty"`
@@ -210,6 +218,7 @@ type MetricsSpec struct {
 }
 
 type ConsoleSinkSpec struct {
+	// +kubebuilder:default=false
 	Enabled bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Period  int    `json:"period,omitempty" yaml:"period,omitempty"`
 	Unit    string `json:"unit,omitempty" yaml:"unit,omitempty"`
@@ -217,12 +226,14 @@ type ConsoleSinkSpec struct {
 
 type CsvSinkSpec struct {
 	Directory string `json:"directory,omitempty" yaml:"directory,omitempty"`
-	Enabled   bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	Period    int    `json:"period,omitempty" yaml:"period,omitempty"`
-	Unit      string `json:"unit,omitempty" yaml:"unit,omitempty"`
+	// +kubebuilder:default=false
+	Enabled bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Period  int    `json:"period,omitempty" yaml:"period,omitempty"`
+	Unit    string `json:"unit,omitempty" yaml:"unit,omitempty"`
 }
 
 type GraphiteSinkSpec struct {
+	// +kubebuilder:default=false
 	Enabled  bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty"`
 	Period   int    `json:"period,omitempty" yaml:"period,omitempty"`
@@ -232,16 +243,19 @@ type GraphiteSinkSpec struct {
 }
 
 type JmxSinkSpec struct {
+	// +kubebuilder:default=false
 	Enabled bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Domain  string `json:"domain,omitempty" yaml:"domain,omitempty"`
 }
 
 type PrometheusMetricsServletSpec struct {
+	// +kubebuilder:default=false
 	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
 }
 
 type Slf4jSinkSpec struct {
+	// +kubebuilder:default=false
 	Enabled     bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	FilterClass string `json:"filterClass,omitempty" yaml:"filterClass,omitempty"`
 	FilterRegex string `json:"filterRegex,omitempty" yaml:"filterRegex,omitempty"`
@@ -250,6 +264,7 @@ type Slf4jSinkSpec struct {
 }
 
 type AlluxioMonitorSpec struct {
+	// +kubebuilder:default=false
 	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 }
 
