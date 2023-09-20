@@ -609,6 +609,11 @@ func (in *LoadStatus) DeepCopy() *LoadStatus {
 func (in *MasterSpec) DeepCopyInto(out *MasterSpec) {
 	*out = *in
 	in.Affinity.DeepCopyInto(&out.Affinity)
+	if in.Enabled != nil {
+		in, out := &in.Enabled, &out.Enabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
 		*out = make(map[string]string, len(*in))

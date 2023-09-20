@@ -75,7 +75,7 @@ type MasterSpec struct {
 	Affinity corev1.Affinity `json:"affinity,omitempty" yaml:"affinity,omitempty"`
 	Count    int             `json:"count,omitempty" yaml:"count,omitempty"`
 	// +kubebuilder:default=true
-	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Enabled        *bool             `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
 	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
 	LivenessProbe  ProbeSpec         `json:"livenessProbe,omitempty" yaml:"livenessProbe,omitempty"`
