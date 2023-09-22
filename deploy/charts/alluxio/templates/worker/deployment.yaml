@@ -148,6 +148,7 @@ spec:
           {{- if eq .Values.pagestore.type "hostPath" }}
 {{- include "pagestoreHostPathVolumeMounts" . | indent 10 }}
           {{- end }}
+      {{- if .Values.master.enabled }}
       - name: wait-master
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         command: [ "/bin/sh", "-c" ]
@@ -155,6 +156,7 @@ spec:
           - until nslookup {{ $fullName }}-master-0;
             do sleep 2;
             done
+      {{- end }}
       containers:
         - name: alluxio-worker
           image: {{ .Values.image }}:{{ .Values.imageTag }}
