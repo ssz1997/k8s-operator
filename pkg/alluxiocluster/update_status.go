@@ -79,13 +79,13 @@ func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
 	if err != nil || worker.Status.AvailableReplicas != worker.Status.Replicas {
 		return false
 	}
-	if ctx.AlluxioCluster.Spec.Fuse.Enabled {
+	if ctx.AlluxioCluster.Spec.Fuse.Enabled != nil && *ctx.AlluxioCluster.Spec.Fuse.Enabled {
 		fuse, err := utils.GetFuseStatus(componentStatusReqCtx)
 		if err != nil || fuse.Status.NumberAvailable != fuse.Status.DesiredNumberScheduled {
 			return false
 		}
 	}
-	if ctx.AlluxioCluster.Spec.Proxy.Enabled {
+	if ctx.AlluxioCluster.Spec.Proxy.Enabled != nil && *ctx.AlluxioCluster.Spec.Proxy.Enabled {
 		proxy, err := utils.GetProxyStatus(componentStatusReqCtx)
 		if err != nil || proxy.Status.NumberAvailable != proxy.Status.DesiredNumberScheduled {
 			return false
