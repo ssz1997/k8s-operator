@@ -14,7 +14,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: {{ $fullName }}-csi-storage-class
+  name: {{ .Release.Namespace }}-{{ $fullName }}-csi-storage-class
 provisioner: alluxio
 volumeBindingMode: Immediate
 parameters:

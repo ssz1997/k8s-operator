@@ -22,12 +22,22 @@ type HelmContext struct {
 	ConfigFilePath string
 	Namespace      string
 	ReleaseName    string
+	Version        string
+}
+
+func HelmAddRepo(name, path string) error {
+	args := []string{"repo", "add", name, path}
+	if _, err := executeHelmCommand(args); err != nil {
+		logger.Errorf("Error adding Helm repo %s at %s", name, path)
+		return err
+	}
+	return nil
 }
 
 func HelmInstall(ctx HelmContext) error {
-	args := []string{"install", "-f", ctx.ConfigFilePath, "--namespace", ctx.Namespace, ctx.ReleaseName, ctx.HelmChartPath}
+	args := []string{"install", ctx.ReleaseName, "-f", ctx.ConfigFilePath, ctx.HelmChartPath, "--version", ctx.Version, "--namespace", ctx.Namespace}
 	if _, err := executeHelmCommand(args); err != nil {
-		logger.Errorf("Error installing Helm release %s.", ctx.ReleaseName, ctx.Namespace)
+		logger.Errorf("Error installing Helm release %s: %v", ctx.ReleaseName, ctx.Namespace, err.Error())
 		return err
 	}
 	return nil

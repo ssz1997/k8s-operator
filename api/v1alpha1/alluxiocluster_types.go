@@ -49,6 +49,7 @@ type AlluxioClusterSpec struct {
 	Fuse               FuseSpec           `json:"fuse,omitempty" yaml:"fuse,omitempty"`
 	Metrics            MetricsSpec        `json:"metrics,omitempty" yaml:"metrics,omitempty"`
 	AlluxioMonitor     AlluxioMonitorSpec `json:"alluxio-monitor,omitempty" yaml:"alluxio-monitor,omitempty"`
+	Etcd               EtcdSpec           `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 }
 
 type HostAlias struct {
@@ -99,7 +100,7 @@ type WorkerSpec struct {
 	Count                 int               `json:"count,omitempty" yaml:"count,omitempty"`
 	Env                   map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
 	JvmOptions            []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
-	LimitOneWorkerPerNode bool              `json:"limitOneWorkerPerNode,omitempty" yaml:"limitOneWorkerPerNode,omitempty"`
+	LimitOneWorkerPerNode *bool             `json:"limitOneWorkerPerNode,omitempty" yaml:"limitOneWorkerPerNode,omitempty"`
 	LivenessProbe         ProbeSpec         `json:"livenessProbe,omitempty" yaml:"livenessProbe,omitempty"`
 	NodeSelector          map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
 	PodAnnotations        map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
@@ -251,6 +252,31 @@ type Slf4jSinkSpec struct {
 
 type AlluxioMonitorSpec struct {
 	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+}
+
+type EtcdSpec struct {
+	Enabled      *bool             `json:"enabled" yaml:"enabled"`
+	Auth         EtcdAuthSpec      `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Image        EtcdImageSpec     `json:"image,omitempty" yaml:"image,omitempty"`
+	NodeSelector map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	ReplicaCount int               `json:"replicaCount,omitempty" yaml:"replicaCount,omitempty"`
+}
+
+type EtcdAuthSpec struct {
+	Rbac  EtcdAuthRbacSpec  `json:"rbac,omitempty" yaml:"rbac,omitempty"`
+	Token EtcdAuthTokenSpec `json:"token,omitempty" yaml:"token,omitempty"`
+}
+
+type EtcdAuthRbacSpec struct {
+	Create *bool `json:"create" yaml:"create"`
+}
+
+type EtcdAuthTokenSpec struct {
+	Enabled *bool `json:"enabled" yaml:"enabled"`
+}
+
+type EtcdImageSpec struct {
+	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -356,7 +356,7 @@ etcd:
       create: false
     token:
       enabled: false
-# Set num of etcd instances, it needs to be a odd number
+# Set num of etcd instances, it needs to be an odd number
 #  replicaCount: 3
 
 ##  Metrics System ##

@@ -80,6 +80,56 @@ spec:
                 type: string
               dnsPolicy:
                 type: string
+              etcd:
+                properties:
+                  auth:
+                    properties:
+                      rbac:
+                        properties:
+                          create:
+                            type: boolean
+                        required:
+                        - create
+                        type: object
+                      token:
+                        properties:
+                          enabled:
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
+                    type: object
+                  enabled:
+                    type: boolean
+                  image:
+                    properties:
+                      resources:
+                        properties:
+                          limits:
+                            properties:
+                              cpu:
+                                type: string
+                              memory:
+                                type: string
+                            type: object
+                          requests:
+                            properties:
+                              cpu:
+                                type: string
+                              memory:
+                                type: string
+                            type: object
+                        type: object
+                    type: object
+                  nodeSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  replicaCount:
+                    type: integer
+                required:
+                - enabled
+                type: object
               fsGroup:
                 type: string
               fuse:
