@@ -18,6 +18,8 @@
 {{- $alluxioWorkerLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker-log") }}
 {{- $alluxioWorkerPagestorePath := include "alluxio.mount.basePath" "/pagestore" }}
 {{- $alluxioWorkerLogDir := include "alluxio.basePath" "/logs"}}
+{{- $alluxioWorkerIdVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker_identity") }}
+{{- $alluxioWorkerIdDirPath := include "alluxio.mount.basePath" "/worker_identity" }}
 
 {{- define "pagestoreHostPathVolumes" -}}
 {{- $paths := splitList "," .Values.pagestore.hostPath }}
@@ -209,6 +211,8 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            - name: {{ $alluxioWorkerIdVolumeName }}
+              mountPath: {{ $alluxioWorkerIdDirPath }}
             {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioWorkerLogVolumeName }}
               mountPath: {{ $alluxioWorkerLogDir }}
@@ -237,6 +241,10 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        - name: {{ $alluxioWorkerIdVolumeName }}
+          hostPath:
+            path: {{ $alluxioWorkerIdDirPath }}
+            type: DirectoryOrCreate
         {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioWorkerLogVolumeName }}
           hostPath:
