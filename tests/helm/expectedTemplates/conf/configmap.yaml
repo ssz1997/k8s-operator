@@ -46,10 +46,10 @@ data:
     alluxio.worker.page.store.dirs=/mnt/alluxio/pagestore
     alluxio.worker.page.store.sizes=1Gi
   alluxio-env.sh: |-
-    ALLUXIO_MASTER_JAVA_OPTS+="-Dalluxio.master.hostname=${ALLUXIO_MASTER_HOSTNAME} masterJvmOption1 masterJvmOption2 "
-    ALLUXIO_WORKER_JAVA_OPTS+="-Dalluxio.worker.hostname=${ALLUXIO_WORKER_HOSTNAME} workerJvmOption1 workerJvmOption2 "
-    ALLUXIO_PROXY_JAVA_OPTS+="-Dalluxio.user.hostname=${ALLUXIO_CLIENT_HOSTNAME} proxyJvmOption1 proxyJvmOption2 "
-    ALLUXIO_FUSE_JAVA_OPTS+="-Dalluxio.user.hostname=${ALLUXIO_CLIENT_HOSTNAME} fuseJvmOption1 fuseJvmOption2 "
+    ALLUXIO_MASTER_JAVA_OPTS="-Dalluxio.master.hostname=${ALLUXIO_MASTER_HOSTNAME} masterJvmOption1 masterJvmOption2 "
+    ALLUXIO_WORKER_JAVA_OPTS="-Dalluxio.worker.hostname=${ALLUXIO_WORKER_HOSTNAME} workerJvmOption1 workerJvmOption2 "
+    ALLUXIO_PROXY_JAVA_OPTS="-Dalluxio.user.hostname=${ALLUXIO_CLIENT_HOSTNAME} proxyJvmOption1 proxyJvmOption2 "
+    ALLUXIO_FUSE_JAVA_OPTS="-Dalluxio.user.hostname=${ALLUXIO_CLIENT_HOSTNAME} fuseJvmOption1 fuseJvmOption2 "
   metrics.properties: |-
     sink.console.class=alluxio.metrics.sink.ConsoleSink
     sink.console.period=11
