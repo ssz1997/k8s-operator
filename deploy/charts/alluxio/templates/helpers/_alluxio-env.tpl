@@ -62,8 +62,8 @@ See the NOTICE file distributed with this work for information regarding copyrig
 {{- end -}}
 
 {{- define "alluxio.env" -}}
-ALLUXIO_MASTER_JAVA_OPTS+="{{ include "alluxio.master.env" . }}"
-ALLUXIO_WORKER_JAVA_OPTS+="{{ include "alluxio.worker.env" . }}"
-ALLUXIO_PROXY_JAVA_OPTS+="{{ include "alluxio.proxy.env" . }}"
-ALLUXIO_FUSE_JAVA_OPTS+="{{ include "alluxio.fuse.env" . }}"
+ALLUXIO_MASTER_JAVA_OPTS="{{ include "alluxio.master.env" . }}"
+ALLUXIO_WORKER_JAVA_OPTS="{{ include "alluxio.worker.env" . }}"
+ALLUXIO_PROXY_JAVA_OPTS="{{ include "alluxio.proxy.env" . }}"
+ALLUXIO_FUSE_JAVA_OPTS="{{ include "alluxio.fuse.env" . }}"
 {{- end -}}
