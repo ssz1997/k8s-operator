@@ -192,7 +192,7 @@ spec:
           volumeMounts:
             - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: dummy-alluxio-worker_identity-volume
+            - name: dummy-alluxio-worker-identity-volume
               mountPath: /mnt/alluxio/worker_identity
             - name: dummy-alluxio-worker-log-volume
               mountPath: /opt/alluxio/logs
@@ -223,7 +223,7 @@ spec:
         - name: dummy-alluxio-alluxio-conf
           configMap:
             name: dummy-alluxio-alluxio-conf
-        - name: dummy-alluxio-worker_identity-volume
+        - name: dummy-alluxio-worker-identity-volume
           hostPath:
             path: /mnt/alluxio/worker_identity
             type: DirectoryOrCreate

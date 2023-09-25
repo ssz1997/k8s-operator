@@ -18,7 +18,7 @@
 {{- $alluxioWorkerLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker-log") }}
 {{- $alluxioWorkerPagestorePath := include "alluxio.mount.basePath" "/pagestore" }}
 {{- $alluxioWorkerLogDir := include "alluxio.basePath" "/logs"}}
-{{- $alluxioWorkerIdVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker_identity") }}
+{{- $alluxioWorkerIdVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker-identity") }}
 {{- $alluxioWorkerIdDirPath := include "alluxio.mount.basePath" "/worker_identity" }}
 
 {{- define "pagestoreHostPathVolumes" -}}
