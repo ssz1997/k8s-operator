@@ -111,6 +111,7 @@ spec:
           volumeMounts:
             - name: alluxio-fuse-mount
               mountPath: {{ $hostMountPath }}
+        {{- if .Values.master.enabled }}
         - name: wait-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: ["/bin/sh", "-c"]
@@ -121,6 +122,7 @@ spec:
           volumeMounts:
           - name: {{ $fullName }}-alluxio-conf
             mountPath: /opt/alluxio/conf
+        {{- end }}
       containers:
         - name: alluxio-fuse
           image: {{ .Values.image }}:{{ .Values.imageTag }}

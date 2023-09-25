@@ -49,6 +49,7 @@ type AlluxioClusterSpec struct {
 	Fuse               FuseSpec           `json:"fuse,omitempty" yaml:"fuse,omitempty"`
 	Metrics            MetricsSpec        `json:"metrics,omitempty" yaml:"metrics,omitempty"`
 	AlluxioMonitor     AlluxioMonitorSpec `json:"alluxio-monitor,omitempty" yaml:"alluxio-monitor,omitempty"`
+	Etcd               EtcdSpec           `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 }
 
 type HostAlias struct {
@@ -251,6 +252,31 @@ type Slf4jSinkSpec struct {
 
 type AlluxioMonitorSpec struct {
 	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+}
+
+type EtcdSpec struct {
+	Enabled      *bool             `json:"enabled" yaml:"enabled"`
+	Auth         EtcdAuthSpec      `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Image        EtcdImageSpec     `json:"image,omitempty" yaml:"image,omitempty"`
+	NodeSelector map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	ReplicaCount int               `json:"replicaCount,omitempty" yaml:"replicaCount,omitempty"`
+}
+
+type EtcdAuthSpec struct {
+	Rbac  EtcdAuthRbacSpec  `json:"rbac,omitempty" yaml:"rbac,omitempty"`
+	Token EtcdAuthTokenSpec `json:"token,omitempty" yaml:"token,omitempty"`
+}
+
+type EtcdAuthRbacSpec struct {
+	Create *bool `json:"create,omitempty" yaml:"create,omitempty"`
+}
+
+type EtcdAuthTokenSpec struct {
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+}
+
+type EtcdImageSpec struct {
+	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
 }
 
 // +kubebuilder:object:root=true
