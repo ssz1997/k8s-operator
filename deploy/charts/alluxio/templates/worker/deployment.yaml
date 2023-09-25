@@ -258,7 +258,7 @@ spec:
             type: DirectoryOrCreate
         {{- end }}
         - name: {{ $metastoreVolumeName }}
-          {{- if eq .Values.metastore.type "hostPath "}}
+          {{- if eq .Values.metastore.type "hostPath" }}
           hostPath:
             path: {{ .Values.metastore.hostPath }}
             type: DirectoryOrCreate
