@@ -127,8 +127,11 @@ spec:
         command: [ "chown", "-R" ]
         args:
           - 1000:1000
+          - /mnt/alluxio/system-info
           - /opt/alluxio/logs
         volumeMounts:
+          - name: dummy-alluxio-system-info-volume
+            mountPath: /mnt/alluxio/system-info
           - name: dummy-alluxio-worker-log-volume
             mountPath: /opt/alluxio/logs
       - name: wait-master
@@ -192,8 +195,8 @@ spec:
           volumeMounts:
             - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: dummy-alluxio-worker-identity-volume
-              mountPath: /mnt/alluxio/worker_identity
+            - name: dummy-alluxio-system-info-volume
+              mountPath: /mnt/alluxio/system-info
             - name: dummy-alluxio-worker-log-volume
               mountPath: /opt/alluxio/logs
             - mountPath: /mnt/alluxio/pagestore
@@ -223,9 +226,9 @@ spec:
         - name: dummy-alluxio-alluxio-conf
           configMap:
             name: dummy-alluxio-alluxio-conf
-        - name: dummy-alluxio-worker-identity-volume
+        - name: dummy-alluxio-system-info-volume
           hostPath:
-            path: /mnt/alluxio/worker_identity
+            path: /mnt/alluxio/system-info
             type: DirectoryOrCreate
         - name: dummy-alluxio-worker-log-volume
           hostPath:

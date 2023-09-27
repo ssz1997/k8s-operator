@@ -47,7 +47,7 @@ data:
     alluxio.worker.page.store.sizes=1Gi
     
     # Worker Identity
-    alluxio.worker.identity.uuid.file.path=/mnt/alluxio/worker_identity/worker_identity
+    alluxio.worker.identity.uuid.file.path=/mnt/alluxio/system-info/worker_identity
   alluxio-env.sh: |-
     ALLUXIO_MASTER_JAVA_OPTS+="-Dalluxio.master.hostname=${ALLUXIO_MASTER_HOSTNAME} masterJvmOption1 masterJvmOption2 "
     ALLUXIO_WORKER_JAVA_OPTS+="-Dalluxio.worker.hostname=${ALLUXIO_WORKER_HOSTNAME} workerJvmOption1 workerJvmOption2 "

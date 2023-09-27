@@ -18,8 +18,8 @@
 {{- $alluxioWorkerLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker-log") }}
 {{- $alluxioWorkerPagestorePath := include "alluxio.mount.basePath" "/pagestore" }}
 {{- $alluxioWorkerLogDir := include "alluxio.basePath" "/logs"}}
-{{- $alluxioWorkerIdVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker-identity") }}
-{{- $alluxioWorkerIdDirPath := include "alluxio.mount.basePath" "/worker_identity" }}
+{{- $alluxioWorkerSysInfoVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "system-info") }}
+{{- $alluxioWorkerSysInfoDirPath := include "alluxio.mount.basePath" "/system-info" }}
 
 {{- define "pagestoreHostPathVolumes" -}}
 {{- $paths := splitList "," .Values.pagestore.hostPath }}
@@ -133,6 +133,7 @@ spec:
         command: [ "chown", "-R" ]
         args:
           - {{ .Values.user }}:{{ .Values.group }}
+          - {{ $alluxioWorkerSysInfoDirPath }}
           {{- if .Values.hostPathForLogging }}
           - {{ $alluxioWorkerLogDir }}
           {{- end }}
@@ -143,6 +144,8 @@ spec:
           {{- end }}
           {{- end }}
         volumeMounts:
+          - name: {{ $alluxioWorkerSysInfoVolumeName }}
+            mountPath: {{ $alluxioWorkerSysInfoDirPath }}
           {{- if .Values.hostPathForLogging }}
           - name: {{ $alluxioWorkerLogVolumeName }}
             mountPath: {{ $alluxioWorkerLogDir }}
@@ -211,8 +214,8 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: {{ $alluxioWorkerIdVolumeName }}
-              mountPath: {{ $alluxioWorkerIdDirPath }}
+            - name: {{ $alluxioWorkerSysInfoVolumeName }}
+              mountPath: {{ $alluxioWorkerSysInfoDirPath }}
             {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioWorkerLogVolumeName }}
               mountPath: {{ $alluxioWorkerLogDir }}
@@ -241,9 +244,9 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
-        - name: {{ $alluxioWorkerIdVolumeName }}
+        - name: {{ $alluxioWorkerSysInfoVolumeName }}
           hostPath:
-            path: {{ $alluxioWorkerIdDirPath }}
+            path: {{ $alluxioWorkerSysInfoDirPath }}
             type: DirectoryOrCreate
         {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioWorkerLogVolumeName }}
