@@ -13,7 +13,7 @@
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
 
-{{- if .Values.metastore.enabled }}
+{{- if eq .Values.metastore.type "persistentVolumeClaim" }}
 {{- $pvcName := include "alluxio.getPvcName" (dict "prefix" $fullName "component" "metastore") }}
 apiVersion: v1
 kind: PersistentVolumeClaim

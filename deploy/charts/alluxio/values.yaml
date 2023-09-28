@@ -247,14 +247,15 @@ pagestore:
     # Requireid for volume type of emptyDir, ignored otherwise
     memoryBacked: false
 
-# Metastore configures ROCKS DB to store metadata on workers instead of using heap.
-# Persistent Volume are required for metastore. Only ReadWriteOnce is supported.
+# Metastore configures ROCKS DB to store metadata on workers
 metastore:
-  # Whether metastore on worker is enabled.
-  enabled: false
-  # Size of requested storage capacity for the persistentVolumeClaim for metastore.
-  size: 1Gi
-  # StorageClass of the Persistent Volume for metastore
+  # Type of the volume for Alluxio worker Metastore. Can be persistentVolumeClaim or hostPath.
+  type: hostPath
+  # Size of the metastore. Required for volume type of persistentVolumeClaim, ignored otherwise
+  size: 256Mi
+  # Required for volume type of hostPath, ignored otherwise
+  hostPath: /mnt/alluxio/metastore
+  # Required for volume type of persistentVolumeClaim, ignored otherwise
   storageClass: "standard"
 
 

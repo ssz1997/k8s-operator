@@ -129,11 +129,14 @@ spec:
           - 1000:1000
           - /mnt/alluxio/system-info
           - /opt/alluxio/logs
+          - /mnt/alluxio/metastore
         volumeMounts:
           - name: dummy-alluxio-system-info-volume
             mountPath: /mnt/alluxio/system-info
           - name: dummy-alluxio-worker-log-volume
             mountPath: /opt/alluxio/logs
+          - name: dummy-alluxio-metastore-volume
+            mountPath: /mnt/alluxio/metastore
       - name: wait-master
         image: dummy/dummy:dummy
         command: [ "/bin/sh", "-c" ]

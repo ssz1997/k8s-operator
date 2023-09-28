@@ -49,6 +49,9 @@ alluxio.worker.page.store.dirs={{ .Values.pagestore.hostPath }}
 # Worker Identity
 {{ printf "alluxio.worker.identity.uuid.file.path=%v/worker_identity" (include "alluxio.mount.basePath" "/system-info") }}
 
+# Metastore
+alluxio.dora.worker.metastore.rocksdb.dir={{ include "alluxio.mount.basePath" "/metastore" }}
+
 {{- if .Values.etcd.enabled }}
 alluxio.worker.membership.manager.type=ETCD
 {{ printf "alluxio.etcd.endpoints=http://%v-etcd:%v" .Release.Name .Values.etcd.containerPorts.client }}
