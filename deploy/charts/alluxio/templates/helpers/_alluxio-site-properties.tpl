@@ -50,7 +50,7 @@ alluxio.worker.page.store.dirs={{ .Values.pagestore.hostPath }}
 {{ printf "alluxio.worker.identity.uuid.file.path=%v/worker_identity" (include "alluxio.mount.basePath" "/system-info") }}
 
 # Metastore
-alluxio.dora.worker.metastore.rocksdb.dir={{ .Values.metastore.hostPath }}
+alluxio.dora.worker.metastore.rocksdb.dir={{ include "alluxio.mount.basePath" "/metastore" }}
 
 {{- if .Values.etcd.enabled }}
 alluxio.worker.membership.manager.type=ETCD
