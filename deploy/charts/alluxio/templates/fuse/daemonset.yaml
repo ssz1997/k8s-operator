@@ -84,6 +84,16 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
+        - name: mountpoint-cleanup
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          command: [ "umount", "-l", {{ $alluxioFuseMountPoint }} ]
+          volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: {{ $hostMountPath }}
         - name: path-permission
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
