@@ -47,7 +47,7 @@ metadata:
     name: {{ $fullName }}-worker
     app: {{ $name }}
     chart: {{ $chart }}
-    release: {{ .Release.Name }}
+    release: {{ .Release.Namespace }}-{{ .Release.Name }}
     heritage: {{ .Release.Service }}
     role: {{ $workerRoleName }}
 spec:
@@ -57,7 +57,7 @@ spec:
       name: {{ $fullName }}-worker
       app: {{ $name }}
       chart: {{ $chart }}
-      release: {{ .Release.Name }}
+      release: {{ .Release.Namespace }}-{{ .Release.Name }}
       heritage: {{ .Release.Service }}
       role: {{ $workerRoleName }}
   strategy:
@@ -68,7 +68,7 @@ spec:
         name: {{ $fullName }}-worker
         app: {{ $name }}
         chart: {{ $chart }}
-        release: {{ .Release.Name }}
+        release: {{ .Release.Namespace }}-{{ .Release.Name }}
         heritage: {{ .Release.Service }}
         role: {{ $workerRoleName }}
       annotations:
@@ -117,9 +117,7 @@ spec:
         runAsUser: {{ .Values.user }}
         runAsGroup: {{ .Values.group }}
         fsGroup: {{ .Values.fsGroup }}
-      {{- if .Values.serviceAccountName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
-      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccountName | default (printf "%s-sa" .Release.Name) }}
       {{- if .Values.imagePullSecrets }}
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
@@ -137,7 +135,6 @@ spec:
           {{- if .Values.hostPathForLogging }}
           - {{ $alluxioWorkerLogDir }}
           {{- end }}
-          - {{ include "alluxio.mount.basePath" "/metastore"}}
           {{- if eq .Values.pagestore.type "hostPath" }}
           {{- $paths := splitList "," .Values.pagestore.hostPath }}
           {{- range $i, $path := $paths }}
@@ -151,8 +148,6 @@ spec:
           - name: {{ $alluxioWorkerLogVolumeName }}
             mountPath: {{ $alluxioWorkerLogDir }}
           {{- end }}
-          - name: {{ $metastoreVolumeName }}
-            mountPath: {{ include "alluxio.mount.basePath" "/metastore" }}
           {{- if eq .Values.pagestore.type "hostPath" }}
 {{- include "pagestoreHostPathVolumeMounts" . | indent 10 }}
           {{- end }}
@@ -231,8 +226,10 @@ spec:
             - mountPath: {{ $alluxioWorkerPagestorePath }}
               name: {{ $pagestoreVolumeName }}
             {{- end }}
+            {{- if .Values.metastore.enabled }}
             - name: {{ $metastoreVolumeName }}
               mountPath: {{ include "alluxio.mount.basePath" "/metastore"}}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.worker "readOnly" true) | indent 12 }}
             {{- end }}
@@ -257,15 +254,11 @@ spec:
             path: {{ .Values.worker.hostPathForLogs }}
             type: DirectoryOrCreate
         {{- end }}
+        {{- if .Values.metastore.enabled }}
         - name: {{ $metastoreVolumeName }}
-          {{- if eq .Values.metastore.type "hostPath" }}
-          hostPath:
-            path: {{ .Values.metastore.hostPath }}
-            type: DirectoryOrCreate
-          {{- else if eq .Values.metastore.type "persistentVolumeClaim" }}
           persistentVolumeClaim:
             claimName: {{ include "alluxio.getPvcName" (dict "prefix" $fullName "component" "metastore") }}
-          {{- end }}
+        {{- end }}
         {{- if .Values.secrets }}
 {{- include "alluxio.secretVolumes" .Values.secrets.worker | indent 8 }}
         {{- end }}
