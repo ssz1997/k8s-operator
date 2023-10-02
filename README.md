@@ -19,10 +19,14 @@ You can checkout more details in its structure and how to join Alluxio PMC
 [here](https://github.com/Alluxio/alluxio/wiki/Alluxio-Project-Management-Committee-(PMC)).
 
 ## Quick Start and Documentation 📖
-Under development.
+Checkout our up-to-date documentation [here](https://docs.alluxio.io/os/user/edge/en/kubernetes/Install-Alluxio-On-Kubernetes.html).
 
 ## Compatibility with Alluxio 🧩
-Under development.
+The minimum version 
+| k8s-operator\alluxio | v300 | v301 | v302 | v303 | v304 |
+|----------------------|------|------|------|------|------|
+| v1.0.0               | ✅    | ✅    | ✅    | ✅    |      |
+| v1.0.1               | ✅    | ✅    | ✅    | ✅    |      |
 
 ## Community and Events 📣
 Please use the following to reach members of the community:
@@ -30,10 +34,6 @@ Please use the following to reach members of the community:
 * [Alluxio Community Slack Channel](https://www.alluxio.io/slack): post your questions here if you seek for help for general questions or issues using Alluxio.
 * [Special Interest Groups (SIG) for Alluxio users and developers](#contributing)
 * Community Events: [upcoming online office hours, meetups and webinars](https://www.alluxio.io/events)
-* Meetup Groups: [Global Online Meetup](https://www.meetup.com/Alluxio-Global-Online-Meetup/), [Bay Area Meetup](http://www.meetup.com/Alluxio),
-[New York Meetup](https://www.meetup.com/Alluxio-Open-Source-New-York-Meetup),
-[Beijing Alluxio Meetup](https://www.meetup.com/meetup-group-iLMBZGhS/), [Austin Meetup](https://www.meetup.com/Cloud-Data-Orchestration-Austin/)
-* [Alluxio Twitter](https://twitter.com/alluxio); [Alluxio Youtube Channel](https://www.youtube.com/channel/UCpibQsajhwqYPLYhke4RigA); [Alluxio Mailing List](https://groups.google.com/forum/?fromgroups#!forum/alluxio-users)
 
 ## Contributing 🎁
 
