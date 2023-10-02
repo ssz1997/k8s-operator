@@ -34,6 +34,7 @@ data:
     dummyCredential1=dummyVal1
     alluxio.dummyProperty0=dummy
     alluxio.dummyProperty1=dummy
+    alluxio.cluster.name=default-dummy
     
     # Journal properties
     alluxio.master.journal.type=EMBEDDED

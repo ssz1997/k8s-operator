@@ -23,6 +23,7 @@ alluxio.dora.client.ufs.root={{ .Values.dataset.path }}
 {{- range $key, $val := .Values.properties }}
 {{ printf "%v=%v" $key $val }}
 {{- end }}
+alluxio.cluster.name={{ .Release.Namespace }}-{{ .Release.Name }}
 
 {{- if eq (int .Values.master.count) 1 }}
 # Master address for single master
