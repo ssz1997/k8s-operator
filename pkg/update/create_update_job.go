@@ -22,6 +22,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/alluxiocluster"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
@@ -29,7 +30,7 @@ import (
 func CreateUpdateJob(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	ctx.Update.Status.Phase = alluxiov1alpha1.UpdatePhaseUpdating
+	ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseUpdating
 	_, err := UpdateUpdateStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
@@ -39,7 +40,7 @@ func CreateUpdateJob(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	constructUpdateJob(ctx.AlluxioCluster, ctx.Update, updateJob)
+	constructUpdateJob(ctx.AlluxioClusterer, ctx.Updater, updateJob)
 	if err := ctx.Create(ctx.Context, updateJob); err != nil {
 		logger.Errorf("Failed to update data of dataset %s: %v", ctx.NamespacedName.String(), err)
 		return ctrl.Result{}, err
@@ -60,20 +61,20 @@ func getUpdateJobFromYaml() (*batchv1.Job, error) {
 	return udpateJob.(*batchv1.Job), nil
 }
 
-func constructUpdateJob(alluxio *alluxiov1alpha1.AlluxioCluster, update *alluxiov1alpha1.Update, updateJob *batchv1.Job) {
-	updateJob.Name = utils.GetUpdateJobName(update.Name)
-	updateJob.Namespace = alluxio.Namespace
+func constructUpdateJob(alluxio alluxiocluster.AlluxioClusterer, update Updater, updateJob *batchv1.Job) {
+	updateJob.Name = utils.GetUpdateJobName(update.GetName())
+	updateJob.Namespace = alluxio.GetNamespace()
 	var imagePullSecrets []corev1.LocalObjectReference
-	for _, secret := range alluxio.Spec.ImagePullSecrets {
+	for _, secret := range alluxio.GetImagePullSecrets() {
 		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{Name: secret})
 
 	}
 	updateJob.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
-	updateJob.Spec.Template.Spec.ServiceAccountName = alluxio.Spec.ServiceAccountName
-	updateJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.Spec.Image, alluxio.Spec.ImageTag)
-	updateJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/update.go", update.Spec.Path}
-	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name)
-	updateConfigMapName := utils.GetUpdateConfigmapName(alluxio.Spec.NameOverride, alluxio.Name)
+	updateJob.Spec.Template.Spec.ServiceAccountName = alluxio.GetServiceAccountName()
+	updateJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.GetImage(), alluxio.GetImageTag())
+	updateJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/update.go", update.GetUpdatePath()}
+	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.GetNameOverride(), alluxio.GetName())
+	updateConfigMapName := utils.GetUpdateConfigmapName(alluxio.GetNameOverride(), alluxio.GetName())
 	updateJob.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 		{
 			Name:      alluxioConfigMapName,

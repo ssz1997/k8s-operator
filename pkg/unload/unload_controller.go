@@ -22,6 +22,8 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	alluxioClusterPkg "github.com/alluxio/k8s-operator/pkg/alluxiocluster"
+	datasetPkg "github.com/alluxio/k8s-operator/pkg/dataset"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
@@ -31,8 +33,8 @@ type UnloadReconciler struct {
 }
 
 type UnloadReconcilerReqCtx struct {
-	*alluxiov1alpha1.AlluxioCluster
-	*alluxiov1alpha1.Unload
+	alluxioClusterPkg.AlluxioClusterer
+	Unloader
 	client.Client
 	context.Context
 	types.NamespacedName
@@ -45,7 +47,7 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 		NamespacedName: req.NamespacedName,
 	}
 	unload := &alluxiov1alpha1.Unload{}
-	ctx.Unload = unload
+	ctx.Unloader = unload
 	if err := GetUnLoadFromK8sApiServer(r, req.NamespacedName, unload); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -59,7 +61,7 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 		Namespace: req.Namespace,
 		Name:      unload.Spec.Dataset,
 	}
-	if err := dataset.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -69,12 +71,12 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	}
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
-	ctx.AlluxioCluster = alluxioCluster
+	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
 		Name:      dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := alluxioCluster.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
+	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -99,7 +101,7 @@ func GetUnLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedN
 }
 
 func UpdateUnloadStatus(ctx *UnloadReconcilerReqCtx) (ctrl.Result, error) {
-	if err := ctx.Update(ctx.Context, ctx.Unload); err != nil {
+	if err := ctx.Update(ctx.Context, ctx.Unloader); err != nil {
 		logger.Errorf("Failed updating unload job status: %v", err)
 		return ctrl.Result{}, err
 	}

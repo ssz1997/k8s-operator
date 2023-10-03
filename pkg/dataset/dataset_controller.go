@@ -31,7 +31,7 @@ type DatasetReconciler struct {
 }
 
 type DatasetReconcilerReqCtx struct {
-	*alluxiov1alpha1.Dataset
+	Datasetter
 	client.Client
 	context.Context
 	types.NamespacedName
@@ -45,7 +45,7 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 	}
 
 	dataset := &alluxiov1alpha1.Dataset{}
-	ctx.Dataset = dataset
+	ctx.Datasetter = dataset
 	if err := GetDatasetFromK8sApiServer(r, req.NamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}

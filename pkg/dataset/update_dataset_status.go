@@ -26,8 +26,8 @@ func UpdateDatasetStatus(ctx DatasetReconcilerReqCtx) (ctrl.Result, error) {
 		logger.Errorf("Error getting newest dataset status: %v", err)
 		return ctrl.Result{}, err
 	}
-	if !reflect.DeepEqual(newestDataset.Status, ctx.Dataset.Status) {
-		newestDataset.Status = ctx.Dataset.Status
+	if !reflect.DeepEqual(newestDataset.Status, ctx.Datasetter.GetStatus()) {
+		newestDataset.Status = *ctx.Datasetter.GetStatus()
 		if err := ctx.Client.Status().Update(ctx.Context, newestDataset); err != nil {
 			logger.Errorf("Error updating dataset %s status: %v", ctx.NamespacedName.String(), err)
 			return ctrl.Result{}, err

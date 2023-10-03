@@ -26,11 +26,11 @@ import (
 )
 
 func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result, error) {
-	alluxioOriginalStatusCopy := alluxioClusterCtx.AlluxioCluster.Status.DeepCopy()
-	datasetOriginalStatusCopy := alluxioClusterCtx.Dataset.Status.DeepCopy()
+	alluxioOriginalStatusCopy := alluxioClusterCtx.AlluxioClusterer.GetStatus().DeepCopy()
+	datasetOriginalStatusCopy := alluxioClusterCtx.Datasetter.GetStatus().DeepCopy()
 
 	alluxioClusterNewPhase := alluxioOriginalStatusCopy.Phase
-	datasetNewPhase := alluxioClusterCtx.Dataset.Status.Phase
+	datasetNewPhase := alluxioClusterCtx.Datasetter.GetStatus().Phase
 
 	if datasetOriginalStatusCopy.Phase == alluxiov1alpha1.DatasetPhaseNotExist {
 		alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhasePending
@@ -41,22 +41,22 @@ func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result,
 		if ClusterReady(alluxioClusterCtx) {
 			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseReady
 			datasetNewPhase = alluxiov1alpha1.DatasetPhaseReady
-			alluxioClusterCtx.Dataset.Status.BoundedAlluxioCluster = alluxioClusterCtx.AlluxioCluster.Name
+			alluxioClusterCtx.Datasetter.GetStatus().BoundedAlluxioCluster = alluxioClusterCtx.AlluxioClusterer.GetName()
 		} else {
 			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseCreatingOrUpdating
 			datasetNewPhase = alluxiov1alpha1.DatasetPhaseBounding
 		}
 	}
-	alluxioClusterCtx.AlluxioCluster.Status.Phase = alluxioClusterNewPhase
-	alluxioClusterCtx.Dataset.Status.Phase = datasetNewPhase
+	alluxioClusterCtx.AlluxioClusterer.GetStatus().Phase = alluxioClusterNewPhase
+	alluxioClusterCtx.Datasetter.GetStatus().Phase = datasetNewPhase
 
-	if !reflect.DeepEqual(alluxioOriginalStatusCopy, alluxioClusterCtx.AlluxioCluster.Status) {
-		if err := alluxioClusterCtx.Client.Status().Update(alluxioClusterCtx.Context, alluxioClusterCtx.AlluxioCluster); err != nil {
+	if !reflect.DeepEqual(alluxioOriginalStatusCopy, alluxioClusterCtx.AlluxioClusterer.GetStatus()) {
+		if err := alluxioClusterCtx.Client.Status().Update(alluxioClusterCtx.Context, alluxioClusterCtx.AlluxioClusterer); err != nil {
 			logger.Errorf("Error updating cluster status: %v", err)
 			return ctrl.Result{}, err
 		}
 	}
-	if !reflect.DeepEqual(*datasetOriginalStatusCopy, alluxioClusterCtx.Dataset.Status) {
+	if !reflect.DeepEqual(*datasetOriginalStatusCopy, alluxioClusterCtx.Datasetter.GetStatus()) {
 		if err := updateDatasetStatus(alluxioClusterCtx); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -82,13 +82,13 @@ func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
 	if err != nil || worker.Status.AvailableReplicas != worker.Status.Replicas {
 		return false
 	}
-	if ctx.AlluxioCluster.Spec.Fuse.Enabled != nil && *ctx.AlluxioCluster.Spec.Fuse.Enabled {
+	if ctx.AlluxioClusterer.GetFuseSpec().Enabled != nil && *ctx.AlluxioClusterer.GetFuseSpec().Enabled {
 		fuse, err := utils.GetFuseStatus(componentStatusReqCtx)
 		if err != nil || fuse.Status.NumberAvailable != fuse.Status.DesiredNumberScheduled {
 			return false
 		}
 	}
-	if ctx.AlluxioCluster.Spec.Proxy.Enabled != nil && *ctx.AlluxioCluster.Spec.Proxy.Enabled {
+	if ctx.AlluxioClusterer.GetProxySpec().Enabled != nil && *ctx.AlluxioClusterer.GetProxySpec().Enabled {
 		proxy, err := utils.GetProxyStatus(componentStatusReqCtx)
 		if err != nil || proxy.Status.NumberAvailable != proxy.Status.DesiredNumberScheduled {
 			return false
@@ -99,11 +99,11 @@ func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
 
 func updateDatasetStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) error {
 	datasetCtx := dataset.DatasetReconcilerReqCtx{
-		Dataset: alluxioClusterCtx.Dataset,
-		Client:  alluxioClusterCtx.Client,
-		Context: alluxioClusterCtx.Context,
+		Datasetter: alluxioClusterCtx.Datasetter,
+		Client:     alluxioClusterCtx.Client,
+		Context:    alluxioClusterCtx.Context,
 		NamespacedName: types.NamespacedName{
-			Name:      alluxioClusterCtx.Dataset.Name,
+			Name:      alluxioClusterCtx.Datasetter.GetName(),
 			Namespace: alluxioClusterCtx.Namespace,
 		},
 	}

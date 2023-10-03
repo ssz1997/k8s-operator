@@ -23,6 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	alluxioClusterPkg "github.com/alluxio/k8s-operator/pkg/alluxiocluster"
+	datasetPkg "github.com/alluxio/k8s-operator/pkg/dataset"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
@@ -33,8 +35,8 @@ type LoadReconciler struct {
 }
 
 type LoadReconcilerReqCtx struct {
-	*alluxiov1alpha1.AlluxioCluster
-	*alluxiov1alpha1.Load
+	alluxioClusterPkg.AlluxioClusterer
+	Loader
 	client.Client
 	context.Context
 	types.NamespacedName
@@ -47,7 +49,7 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 		NamespacedName: req.NamespacedName,
 	}
 	load := &alluxiov1alpha1.Load{}
-	ctx.Load = load
+	ctx.Loader = load
 	if err := GetLoadFromK8sApiServer(r, req.NamespacedName, load); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -62,7 +64,7 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 		Namespace: req.Namespace,
 		Name:      load.Spec.Dataset,
 	}
-	if err := dataset.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -72,12 +74,12 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 	}
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
-	ctx.AlluxioCluster = alluxioCluster
+	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
 		Name:      dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := alluxioCluster.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
+	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -109,14 +111,14 @@ func WaitLoadJobFinish(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 	if loadJob.Status.Succeeded == 1 {
-		ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseLoaded
+		ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoaded
 		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Data is loaded but failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	} else if loadJob.Status.Failed == 1 {
-		ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseFailed
+		ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseFailed
 		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
@@ -142,7 +144,7 @@ func getLoadJob(ctx *LoadReconcilerReqCtx) (*batchv1.Job, error) {
 }
 
 func UpdateLoadStatus(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
-	if err := ctx.Update(ctx.Context, ctx.Load); err != nil {
+	if err := ctx.Update(ctx.Context, ctx.Loader); err != nil {
 		logger.Errorf("Failed updating load job status: %v", err)
 		return ctrl.Result{}, err
 	}

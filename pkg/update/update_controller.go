@@ -23,6 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	alluxioClusterPkg "github.com/alluxio/k8s-operator/pkg/alluxiocluster"
+	datasetPkg "github.com/alluxio/k8s-operator/pkg/dataset"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
@@ -33,8 +35,8 @@ type UpdateReconciler struct {
 }
 
 type UpdateReconcilerReqCtx struct {
-	*alluxiov1alpha1.AlluxioCluster
-	*alluxiov1alpha1.Update
+	alluxioClusterPkg.AlluxioClusterer
+	Updater
 	client.Client
 	context.Context
 	types.NamespacedName
@@ -47,7 +49,7 @@ func (r *UpdateReconciler) Reconcile(context context.Context, req ctrl.Request) 
 		NamespacedName: req.NamespacedName,
 	}
 	update := &alluxiov1alpha1.Update{}
-	ctx.Update = update
+	ctx.Updater = update
 	if err := GetUpdateFromK8sApiServer(r, req.NamespacedName, update); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -62,7 +64,7 @@ func (r *UpdateReconciler) Reconcile(context context.Context, req ctrl.Request) 
 		Namespace: req.Namespace,
 		Name:      update.Spec.Dataset,
 	}
-	if err := dataset.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -72,12 +74,12 @@ func (r *UpdateReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	}
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
-	ctx.AlluxioCluster = alluxioCluster
+	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
 		Name:      dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := alluxioCluster.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
+	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -109,14 +111,14 @@ func WaitUpdateJobFinish(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 	if updateJob.Status.Succeeded == 1 {
-		ctx.Update.Status.Phase = alluxiov1alpha1.UpdatePhaseUpdated
+		ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseUpdated
 		if _, err := UpdateUpdateStatus(ctx); err != nil {
 			logger.Errorf("Data is updated but failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	} else if updateJob.Status.Failed == 1 {
-		ctx.Update.Status.Phase = alluxiov1alpha1.UpdatePhaseFailed
+		ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseFailed
 		if _, err := UpdateUpdateStatus(ctx); err != nil {
 			logger.Errorf("Failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
@@ -142,7 +144,7 @@ func getUpdateJob(ctx *UpdateReconcilerReqCtx) (*batchv1.Job, error) {
 }
 
 func UpdateUpdateStatus(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
-	if err := ctx.Client.Status().Update(ctx.Context, ctx.Update); err != nil {
+	if err := ctx.Client.Status().Update(ctx.Context, ctx.Updater); err != nil {
 		logger.Errorf("Failed updating update job status: %v", err)
 		return ctrl.Result{}, err
 	}
