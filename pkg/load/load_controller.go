@@ -41,25 +41,20 @@ type LoadReconcilerReqCtx struct {
 }
 
 func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
-	ctx := LoadReconcilerReqCtx{
+	ctx := &LoadReconcilerReqCtx{
 		Client:         r.Client,
 		Context:        context,
 		NamespacedName: req.NamespacedName,
 	}
 	load := &alluxiov1alpha1.Load{}
-	if err := r.Get(context, req.NamespacedName, load); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Infof("Load object %v in namespace %v not found. It is being deleted or already deleted.", req.Name, req.Namespace)
-		} else {
-			logger.Errorf("Failed to get load job %v in namespace %v: %v", req.Name, req.Namespace, err)
-			return ctrl.Result{}, err
-		}
-	}
 	ctx.Load = load
+	if err := GetLoadFromK8sApiServer(r, req.NamespacedName, load); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	if load.ObjectMeta.UID == "" {
 		// TODO: shall we stop the load if still loading?
-		return r.deleteJob(ctx)
+		return DeleteJob(ctx)
 	}
 
 	dataset := &alluxiov1alpha1.Dataset{}
@@ -67,58 +62,62 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 		Namespace: req.Namespace,
 		Name:      load.Spec.Dataset,
 	}
-	if err := r.Get(context, datasetNamespacedName, dataset); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Errorf("Dataset %s is not found. Please double check your configuration.", load.Spec.Dataset)
-			load.Status.Phase = alluxiov1alpha1.LoadPhaseFailed
-			return r.updateLoadStatus(ctx)
-		} else {
-			logger.Errorf("Error getting dataset %s: %v", load.Spec.Dataset, err)
-			return ctrl.Result{}, err
-		}
+	if err := dataset.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
 		load.Status.Phase = alluxiov1alpha1.LoadPhaseWaiting
-		return r.updateLoadStatus(ctx)
+		return UpdateLoadStatus(ctx)
 	}
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
+	ctx.AlluxioCluster = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
 		Name:      dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := r.Get(context, alluxioNamespacedName, alluxioCluster); err != nil {
-		logger.Errorf("Error getting alluxio cluster %s: %v", alluxioNamespacedName.Name, err)
+	if err := alluxioCluster.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
-	ctx.AlluxioCluster = alluxioCluster
 
 	switch load.Status.Phase {
 	case alluxiov1alpha1.LoadPhaseNone, alluxiov1alpha1.LoadPhaseWaiting:
-		return r.createLoadJob(ctx)
+		return CreateLoadJob(ctx)
 	case alluxiov1alpha1.LoadPhaseLoading:
-		return r.waitLoadJobFinish(ctx)
+		return WaitLoadJobFinish(ctx)
 	default:
 		return ctrl.Result{}, nil
 	}
 }
 
-func (r *LoadReconciler) waitLoadJobFinish(ctx LoadReconcilerReqCtx) (ctrl.Result, error) {
-	loadJob, err := r.getLoadJob(ctx)
+func GetLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, load *alluxiov1alpha1.Load) error {
+	if err := r.Get(context.TODO(), namespacedName, load); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Infof("Load object %v not found. It is being deleted or already deleted.", namespacedName.String())
+		} else {
+			logger.Errorf("Failed to get load job %v: %v", namespacedName.String(), err)
+			return err
+		}
+	}
+	return nil
+}
+
+func WaitLoadJobFinish(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
+	loadJob, err := getLoadJob(ctx)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 	if loadJob.Status.Succeeded == 1 {
 		ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseLoaded
-		if _, err := r.updateLoadStatus(ctx); err != nil {
+		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Data is loaded but failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	} else if loadJob.Status.Failed == 1 {
 		ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseFailed
-		if _, err := r.updateLoadStatus(ctx); err != nil {
+		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
@@ -129,21 +128,21 @@ func (r *LoadReconciler) waitLoadJobFinish(ctx LoadReconcilerReqCtx) (ctrl.Resul
 	}
 }
 
-func (r *LoadReconciler) getLoadJob(ctx LoadReconcilerReqCtx) (*batchv1.Job, error) {
+func getLoadJob(ctx *LoadReconcilerReqCtx) (*batchv1.Job, error) {
 	loadJob := &batchv1.Job{}
 	loadJobNamespacedName := types.NamespacedName{
 		Name:      utils.GetLoadJobName(ctx.Name),
 		Namespace: ctx.Namespace,
 	}
-	if err := r.Get(ctx.Context, loadJobNamespacedName, loadJob); err != nil {
+	if err := ctx.Get(ctx.Context, loadJobNamespacedName, loadJob); err != nil {
 		logger.Errorf("Error getting load job %s: %v", ctx.NamespacedName.String(), err)
 		return nil, err
 	}
 	return loadJob, nil
 }
 
-func (r *LoadReconciler) updateLoadStatus(ctx LoadReconcilerReqCtx) (ctrl.Result, error) {
-	if err := r.Client.Status().Update(ctx.Context, ctx.Load); err != nil {
+func UpdateLoadStatus(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
+	if err := ctx.Update(ctx.Context, ctx.Load); err != nil {
 		logger.Errorf("Failed updating load job status: %v", err)
 		return ctrl.Result{}, err
 	}

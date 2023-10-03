@@ -70,7 +70,10 @@ func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result,
 
 func ClusterReady(ctx AlluxioClusterReconcileReqCtx) bool {
 	componentStatusReqCtx := utils.ComponentStatusReqCtx{}
-	copier.Copy(&componentStatusReqCtx, &ctx)
+	if err := copier.Copy(&componentStatusReqCtx, &ctx); err != nil {
+		logger.Errorf("Invalid copy from AlluxioClusterReconcileReqCtx to ComponentStatusReqCtx. %v", err)
+		return false
+	}
 	master, err := utils.GetMasterStatus(componentStatusReqCtx)
 	if err != nil || master.Status.AvailableReplicas != master.Status.Replicas {
 		return false

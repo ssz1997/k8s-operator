@@ -46,14 +46,8 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 
 	dataset := &alluxiov1alpha1.Dataset{}
 	ctx.Dataset = dataset
-
-	if err := r.Get(context, req.NamespacedName, dataset); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Infof("Dataset %s not found. It is being deleted or already deleted.", req.NamespacedName.String())
-		} else {
-			logger.Errorf("Failed to get dataset %s: %v", req.NamespacedName.String(), err)
-			return ctrl.Result{}, err
-		}
+	if err := GetDatasetFromK8sApiServer(r, req.NamespacedName, dataset); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	if dataset.ObjectMeta.UID == "" {
@@ -64,6 +58,19 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 		return UpdateDatasetStatus(ctx)
 	}
 	return ctrl.Result{}, nil
+}
+
+func GetDatasetFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, dataset *alluxiov1alpha1.Dataset) error {
+	if err := r.Get(context.TODO(), namespacedName, dataset); err != nil {
+		if errors.IsNotFound(err) {
+			dataset.Status.Phase = alluxiov1alpha1.DatasetPhaseNotExist
+		}
+		if !errors.IsNotFound(err) {
+			logger.Errorf("Failed to get Dataset %s: %v", namespacedName.String(), err)
+			return err
+		}
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

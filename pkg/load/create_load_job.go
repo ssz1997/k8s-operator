@@ -26,11 +26,11 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func (r *LoadReconciler) createLoadJob(ctx LoadReconcilerReqCtx) (ctrl.Result, error) {
+func CreateLoadJob(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
 	ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseLoading
-	_, err := r.updateLoadStatus(ctx)
+	_, err := UpdateLoadStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
 		return ctrl.Result{}, err
@@ -40,7 +40,7 @@ func (r *LoadReconciler) createLoadJob(ctx LoadReconcilerReqCtx) (ctrl.Result, e
 		return ctrl.Result{}, err
 	}
 	constructLoadJob(ctx.AlluxioCluster, ctx.Load, loadJob)
-	if err := r.Create(ctx.Context, loadJob); err != nil {
+	if err := ctx.Create(ctx.Context, loadJob); err != nil {
 		logger.Errorf("Failed to load data of dataset %s: %v", ctx.NamespacedName.String(), err)
 		return ctrl.Result{}, err
 	}

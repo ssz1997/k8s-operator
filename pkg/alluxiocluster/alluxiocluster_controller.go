@@ -49,71 +49,75 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
 	ctx.AlluxioCluster = alluxioCluster
-	if err := r.Get(context, req.NamespacedName, alluxioCluster); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Infof("Alluxio cluster %s not found. It is being deleted or already deleted.", req.NamespacedName.String())
-		} else {
-			logger.Errorf("Failed to get Alluxio cluster %s: %v", req.NamespacedName.String(), err)
-			return ctrl.Result{}, err
-		}
+	if err := GetAlluxioClusterFromK8sApiServer(r, req.NamespacedName, alluxioCluster); err != nil {
+		return ctrl.Result{}, err
 	}
+
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
 		Name:      alluxioCluster.Spec.Dataset,
 		Namespace: req.Namespace,
 	}
 	ctx.Dataset = dataset
-	if err := r.Get(context, datasetNamespacedName, dataset); err != nil {
-		if errors.IsNotFound(err) {
-			logger.Infof("Dataset %s not found. It is deleted or hasn't been created yet.", alluxioCluster.Spec.Dataset)
-			dataset.Status.Phase = alluxiov1alpha1.DatasetPhaseNotExist
-		} else {
-			logger.Errorf("Failed to get Dataset %s: %v", req.NamespacedName.String(), err)
-			return ctrl.Result{}, err
-		}
+	if err := dataset.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+		return ctrl.Result{}, err
 	}
 
-	if alluxioCluster.DeletionTimestamp != nil {
-		if err := deleteConfYamlFileIfExist(ctx.NamespacedName); err != nil {
-			return ctrl.Result{}, err
-		}
-		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
-			return ctrl.Result{}, err
-		}
-		if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseNotExist {
-			ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
-			ctx.Dataset.Status.BoundedAlluxioCluster = ""
-			if err := updateDatasetStatus(ctx); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-		if err := finalizer.RemoveDummyFinalizerIfExist(r.Client, alluxioCluster, context); err != nil {
-			return ctrl.Result{}, err
-		}
-		return ctrl.Result{}, nil
+	if err := DeleteClusterIfNeeded(ctx); err != nil {
+		return ctrl.Result{}, err
 	}
 
-	if dataset.Status.Phase == alluxiov1alpha1.DatasetPhaseNotExist {
-		if err := deleteConfYamlFileIfExist(ctx.NamespacedName); err != nil {
-			return ctrl.Result{}, err
-		}
-		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
-			return ctrl.Result{}, err
-		}
-		return UpdateStatus(ctx)
-	}
-
-	if alluxioCluster.Status.Phase == alluxiov1alpha1.ClusterPhaseNone || alluxioCluster.Status.Phase == alluxiov1alpha1.ClusterPhasePending {
-		if err := finalizer.AddDummyFinalizerIfNotExist(r.Client, alluxioCluster, context); err != nil {
-			return ctrl.Result{}, err
-		}
-		if err := CreateAlluxioClusterIfNotExist(ctx); err != nil {
-			return ctrl.Result{}, err
-		}
-		return UpdateStatus(ctx)
+	if err := CreateAlluxioClusterIfNeeded(ctx); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	return UpdateStatus(ctx)
+}
+
+func GetAlluxioClusterFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, alluxioCluster *alluxiov1alpha1.AlluxioCluster) error {
+	if err := r.Get(context.TODO(), namespacedName, alluxioCluster); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Infof("Alluxio cluster %s not found. It is being deleted or already deleted.", namespacedName.String())
+		} else {
+			logger.Errorf("Failed to get Alluxio cluster %s: %v", namespacedName.String(), err)
+			return err
+		}
+	}
+	return nil
+}
+
+func DeleteClusterIfNeeded(ctx AlluxioClusterReconcileReqCtx) error {
+	if ctx.AlluxioCluster.DeletionTimestamp != nil {
+		if err := DeleteConfYamlFileIfExist(ctx.NamespacedName); err != nil {
+			return err
+		}
+		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
+			return err
+		}
+		if ctx.Dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseNotExist {
+			ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
+			ctx.Dataset.Status.BoundedAlluxioCluster = ""
+			if err := updateDatasetStatus(ctx); err != nil {
+				return err
+			}
+		}
+		if err := finalizer.RemoveDummyFinalizerIfExist(ctx.Client, ctx.AlluxioCluster, ctx.Context); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func CreateAlluxioClusterIfNeeded(ctx AlluxioClusterReconcileReqCtx) error {
+	if ctx.AlluxioCluster.Status.Phase == alluxiov1alpha1.ClusterPhaseNone || ctx.AlluxioCluster.Status.Phase == alluxiov1alpha1.ClusterPhasePending {
+		if err := finalizer.AddDummyFinalizerIfNotExist(ctx.Client, ctx.AlluxioCluster, ctx.Context); err != nil {
+			return err
+		}
+		if err := CreateAlluxioClusterIfNotExist(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
