@@ -59,14 +59,15 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      unload.Spec.Dataset,
+		Name:      *unload.Spec.Dataset,
 	}
 	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
-		unload.Status.Phase = alluxiov1alpha1.UnloadPhaseNotExist
+	if *dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
+		notExist := alluxiov1alpha1.UnloadPhaseNotExist
+		unload.Status.Phase = &notExist
 		return UpdateUnloadStatus(ctx)
 	}
 
@@ -74,13 +75,13 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      dataset.Status.BoundedAlluxioCluster,
+		Name:      *dataset.Status.BoundedAlluxioCluster,
 	}
 	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	switch unload.Status.Phase {
+	switch *unload.Status.Phase {
 	case alluxiov1alpha1.UnloadPhaseNone, alluxiov1alpha1.UnloadPhaseNotExist:
 		return Unload(ctx)
 	default:

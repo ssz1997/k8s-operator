@@ -30,7 +30,8 @@ import (
 func CreateUpdateJob(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseUpdating
+	updating := alluxiov1alpha1.UpdatePhaseUpdating
+	ctx.Updater.GetStatus().Phase = &updating
 	_, err := UpdateUpdateStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
@@ -65,16 +66,16 @@ func constructUpdateJob(alluxio alluxiocluster.AlluxioClusterer, update Updater,
 	updateJob.Name = utils.GetUpdateJobName(update.GetName())
 	updateJob.Namespace = alluxio.GetNamespace()
 	var imagePullSecrets []corev1.LocalObjectReference
-	for _, secret := range alluxio.GetImagePullSecrets() {
+	for _, secret := range alluxio.ImagePullSecrets() {
 		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{Name: secret})
 
 	}
 	updateJob.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
-	updateJob.Spec.Template.Spec.ServiceAccountName = alluxio.GetServiceAccountName()
-	updateJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.GetImage(), alluxio.GetImageTag())
-	updateJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/update.go", update.GetUpdatePath()}
-	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.GetNameOverride(), alluxio.GetName())
-	updateConfigMapName := utils.GetUpdateConfigmapName(alluxio.GetNameOverride(), alluxio.GetName())
+	updateJob.Spec.Template.Spec.ServiceAccountName = *alluxio.ServiceAccountName()
+	updateJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", *alluxio.Image(), *alluxio.ImageTag())
+	updateJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/update.go", *update.Path()}
+	alluxioConfigMapName := utils.GetAlluxioConfigMapName(*alluxio.NameOverride(), alluxio.GetName())
+	updateConfigMapName := utils.GetUpdateConfigmapName(*alluxio.NameOverride(), alluxio.GetName())
 	updateJob.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 		{
 			Name:      alluxioConfigMapName,

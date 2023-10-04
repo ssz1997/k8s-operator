@@ -14,7 +14,7 @@ package v1alpha1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type UnloadSpec struct {
-	Dataset string `json:"dataset"`
+	Dataset *string `json:"dataset"`
 }
 
 // +kubebuilder:object:root=true
@@ -26,8 +26,8 @@ type Unload struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   UnloadSpec   `json:"spec,omitempty"`
-	Status UnloadStatus `json:"status,omitempty"`
+	Spec   *UnloadSpec   `json:"spec,omitempty"`
+	Status *UnloadStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

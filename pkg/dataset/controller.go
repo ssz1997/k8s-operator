@@ -38,7 +38,7 @@ type DatasetReconcilerReqCtx struct {
 }
 
 func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
-	ctx := DatasetReconcilerReqCtx{
+	ctx := &DatasetReconcilerReqCtx{
 		Client:         r.Client,
 		Context:        context,
 		NamespacedName: req.NamespacedName,
@@ -53,8 +53,9 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 	if dataset.ObjectMeta.UID == "" {
 		return DeleteDatasetIfExist(req)
 	}
-	if dataset.Status.Phase == alluxiov1alpha1.DatasetPhaseNone {
-		dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
+	if *dataset.Status.Phase == alluxiov1alpha1.DatasetPhaseNone {
+		pending := alluxiov1alpha1.DatasetPhasePending
+		dataset.Status.Phase = &pending
 		return UpdateDatasetStatus(ctx)
 	}
 	return ctrl.Result{}, nil
@@ -63,7 +64,8 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 func GetDatasetFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, dataset *alluxiov1alpha1.Dataset) error {
 	if err := r.Get(context.TODO(), namespacedName, dataset); err != nil {
 		if errors.IsNotFound(err) {
-			dataset.Status.Phase = alluxiov1alpha1.DatasetPhaseNotExist
+			notExist := alluxiov1alpha1.DatasetPhaseNotExist
+			dataset.Status.Phase = &notExist
 		}
 		if !errors.IsNotFound(err) {
 			logger.Errorf("Failed to get Dataset %s: %v", namespacedName.String(), err)

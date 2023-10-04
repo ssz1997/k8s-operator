@@ -62,14 +62,15 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      load.Spec.Dataset,
+		Name:      *load.Spec.Dataset,
 	}
 	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
-		load.Status.Phase = alluxiov1alpha1.LoadPhaseWaiting
+	if *dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
+		waiting := alluxiov1alpha1.LoadPhaseWaiting
+		load.Status.Phase = &waiting
 		return UpdateLoadStatus(ctx)
 	}
 
@@ -77,13 +78,13 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      dataset.Status.BoundedAlluxioCluster,
+		Name:      *dataset.Status.BoundedAlluxioCluster,
 	}
 	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	switch load.Status.Phase {
+	switch *load.Status.Phase {
 	case alluxiov1alpha1.LoadPhaseNone, alluxiov1alpha1.LoadPhaseWaiting:
 		return CreateLoadJob(ctx)
 	case alluxiov1alpha1.LoadPhaseLoading:
@@ -111,14 +112,14 @@ func WaitLoadJobFinish(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 	if loadJob.Status.Succeeded == 1 {
-		ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoaded
+		*ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoaded
 		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Data is loaded but failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	} else if loadJob.Status.Failed == 1 {
-		ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseFailed
+		*ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseFailed
 		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err

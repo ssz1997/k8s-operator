@@ -11,10 +11,10 @@
 
 package v1alpha1
 
-func (d *Dataset) GetStatus() *DatasetStatus {
-	return &d.Status
+func (d *Dataset) Conf() *DatasetConf {
+	return d.Spec.Dataset
 }
 
-func (d *Dataset) GetConf() DatasetConf {
-	return d.Spec.Dataset
+func (d *Dataset) GetStatus() *DatasetStatus {
+	return d.Status
 }

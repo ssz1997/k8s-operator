@@ -20,14 +20,14 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
-func UpdateDatasetStatus(ctx DatasetReconcilerReqCtx) (ctrl.Result, error) {
+func UpdateDatasetStatus(ctx *DatasetReconcilerReqCtx) (ctrl.Result, error) {
 	newestDataset := &alluxiov1alpha1.Dataset{}
 	if err := ctx.Get(ctx, ctx.NamespacedName, newestDataset); err != nil {
 		logger.Errorf("Error getting newest dataset status: %v", err)
 		return ctrl.Result{}, err
 	}
 	if !reflect.DeepEqual(newestDataset.Status, ctx.Datasetter.GetStatus()) {
-		newestDataset.Status = *ctx.Datasetter.GetStatus()
+		newestDataset.Status = ctx.Datasetter.GetStatus()
 		if err := ctx.Client.Status().Update(ctx.Context, newestDataset); err != nil {
 			logger.Errorf("Error updating dataset %s status: %v", ctx.NamespacedName.String(), err)
 			return ctrl.Result{}, err

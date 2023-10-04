@@ -14,8 +14,8 @@ package v1alpha1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type UpdateSpec struct {
-	Dataset string `json:"dataset"`
-	Path    string `json:"path"`
+	Dataset *string `json:"dataset"`
+	Path    *string `json:"path"`
 }
 
 // +kubebuilder:object:root=true
@@ -27,8 +27,8 @@ type Update struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   UpdateSpec   `json:"spec,omitempty"`
-	Status UpdateStatus `json:"status,omitempty"`
+	Spec   *UpdateSpec   `json:"spec,omitempty"`
+	Status *UpdateStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

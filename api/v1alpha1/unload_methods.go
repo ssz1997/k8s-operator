@@ -11,10 +11,10 @@
 
 package v1alpha1
 
-func (u *Unload) GetUnloadDatasetName() string {
+func (u *Unload) DatasetName() *string {
 	return u.Spec.Dataset
 }
 
 func (u *Unload) GetStatus() *UnloadStatus {
-	return &u.Status
+	return u.Status
 }

@@ -22,6 +22,6 @@ type Loader interface {
 	metav1.Object
 	runtime.Object
 
-	GetLoadPath() string
+	Path() *string
 	GetStatus() *alluxiov1alpha1.LoadStatus
 }

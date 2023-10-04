@@ -13,48 +13,48 @@ package v1alpha1
 
 import "sigs.k8s.io/yaml"
 
-func (a *AlluxioCluster) GetDatasetName() string {
+func (a *AlluxioCluster) DatasetName() *string {
 	return a.Spec.Dataset
 }
 
-func (a *AlluxioCluster) GetFuseSpec() FuseSpec {
+func (a *AlluxioCluster) FuseSpec() *FuseSpec {
 	return a.Spec.Fuse
 }
 
-func (a *AlluxioCluster) GetImage() string {
+func (a *AlluxioCluster) Image() *string {
 	return a.Spec.Image
 }
 
-func (a *AlluxioCluster) GetImagePullSecrets() []string {
+func (a *AlluxioCluster) ImagePullSecrets() []string {
 	return a.Spec.ImagePullSecrets
 }
 
-func (a *AlluxioCluster) GetImageTag() string {
+func (a *AlluxioCluster) ImageTag() *string {
 	return a.Spec.ImageTag
 }
 
-func (a *AlluxioCluster) GetNameOverride() string {
+func (a *AlluxioCluster) NameOverride() *string {
 	return a.Spec.NameOverride
 }
 
-func (a *AlluxioCluster) GetPagestoreSpec() PagestoreSpec {
+func (a *AlluxioCluster) PagestoreSpec() *PagestoreSpec {
 	return a.Spec.Pagestore
 }
 
-func (a *AlluxioCluster) GetProxySpec() ProxySpec {
+func (a *AlluxioCluster) ProxySpec() *ProxySpec {
 	return a.Spec.Proxy
 }
 
-func (a *AlluxioCluster) GetServiceAccountName() string {
+func (a *AlluxioCluster) ServiceAccountName() *string {
 	return a.Spec.ServiceAccountName
 }
 
-func (a *AlluxioCluster) GetSpecJson() ([]byte, error) {
+func (a *AlluxioCluster) SpecJson() ([]byte, error) {
 	return yaml.Marshal(a.Spec)
 }
 
 func (a *AlluxioCluster) GetStatus() *AlluxioClusterStatus {
-	return &a.Status
+	return a.Status
 }
 
 func (a *AlluxioCluster) IsDeleted() bool {

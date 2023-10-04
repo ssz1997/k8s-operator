@@ -11,10 +11,10 @@
 
 package v1alpha1
 
-func (l *Load) GetLoadPath() string {
+func (l *Load) Path() *string {
 	return l.Spec.Path
 }
 
 func (l *Load) GetStatus() *LoadStatus {
-	return &l.Status
+	return l.Status
 }

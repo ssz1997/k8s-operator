@@ -34,7 +34,8 @@ import (
 func Unload(ctx *UnloadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before starting the command instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and redo the same thing, leading to a confusing state.
-	ctx.Unloader.GetStatus().Phase = alluxiov1alpha1.UnloadPhaseUnLoaded
+	unloaded := alluxiov1alpha1.UnloadPhaseUnLoaded
+	ctx.Unloader.GetStatus().Phase = &unloaded
 	_, err := UpdateUnloadStatus(ctx)
 	if err != nil {
 		logger.Infof("Unloading is pending because status was not updated successfully")
@@ -69,7 +70,7 @@ func unloadInternal(ctx *UnloadReconcilerReqCtx) {
 
 func removeAllPagesFromOneWorkerPod(podName string, ctx *UnloadReconcilerReqCtx, clientSet *kubernetes.Clientset) {
 	// Best effort to remove cached pages
-	paths := strings.Split(ctx.AlluxioClusterer.GetPagestoreSpec().HostPath, ",")
+	paths := strings.Split(*ctx.AlluxioClusterer.PagestoreSpec().HostPath, ",")
 	for i, path := range paths {
 		paths[i] = fmt.Sprintf("%s/*", path)
 	}

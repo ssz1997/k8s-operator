@@ -30,7 +30,8 @@ import (
 func CreateLoadJob(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoading
+	loading := alluxiov1alpha1.LoadPhaseLoading
+	ctx.Loader.GetStatus().Phase = &loading
 	_, err := UpdateLoadStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
@@ -65,16 +66,16 @@ func constructLoadJob(alluxio alluxiocluster.AlluxioClusterer, load Loader, load
 	loadJob.Name = utils.GetLoadJobName(load.GetName())
 	loadJob.Namespace = alluxio.GetNamespace()
 	var imagePullSecrets []corev1.LocalObjectReference
-	for _, secret := range alluxio.GetImagePullSecrets() {
+	for _, secret := range alluxio.ImagePullSecrets() {
 		imagePullSecrets = append(imagePullSecrets, corev1.LocalObjectReference{Name: secret})
 
 	}
 	loadJob.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
-	loadJob.Spec.Template.Spec.ServiceAccountName = alluxio.GetServiceAccountName()
-	loadJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.GetImage(), alluxio.GetImageTag())
-	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/load.go", load.GetLoadPath()}
-	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.GetNameOverride(), alluxio.GetName())
-	loadConfigMapName := utils.GetLoadConfigmapName(alluxio.GetNameOverride(), alluxio.GetName())
+	loadJob.Spec.Template.Spec.ServiceAccountName = *alluxio.ServiceAccountName()
+	loadJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", *alluxio.Image(), *alluxio.ImageTag())
+	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/load.go", *load.Path()}
+	alluxioConfigMapName := utils.GetAlluxioConfigMapName(*alluxio.NameOverride(), alluxio.GetName())
+	loadConfigMapName := utils.GetLoadConfigmapName(*alluxio.NameOverride(), alluxio.GetName())
 	loadJob.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 		{
 			Name:      alluxioConfigMapName,

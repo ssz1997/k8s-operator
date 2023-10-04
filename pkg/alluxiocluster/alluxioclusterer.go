@@ -22,16 +22,16 @@ type AlluxioClusterer interface {
 	metav1.Object
 	runtime.Object
 
-	GetDatasetName() string
-	GetFuseSpec() alluxiov1alpha1.FuseSpec
-	GetImage() string
-	GetImagePullSecrets() []string
-	GetImageTag() string
-	GetNameOverride() string
-	GetPagestoreSpec() alluxiov1alpha1.PagestoreSpec
-	GetProxySpec() alluxiov1alpha1.ProxySpec
-	GetServiceAccountName() string
-	GetSpecJson() ([]byte, error)
+	DatasetName() *string
+	FuseSpec() *alluxiov1alpha1.FuseSpec
+	Image() *string
+	ImagePullSecrets() []string
+	ImageTag() *string
+	NameOverride() *string
+	PagestoreSpec() *alluxiov1alpha1.PagestoreSpec
+	ProxySpec() *alluxiov1alpha1.ProxySpec
+	ServiceAccountName() *string
+	SpecJson() ([]byte, error)
 	GetStatus() *alluxiov1alpha1.AlluxioClusterStatus
 	IsDeleted() bool
 }

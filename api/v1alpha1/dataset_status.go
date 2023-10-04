@@ -22,6 +22,6 @@ const (
 )
 
 type DatasetStatus struct {
-	BoundedAlluxioCluster string       `json:"boundedAlluxioCluster"`
-	Phase                 DatasetPhase `json:"phase"`
+	BoundedAlluxioCluster *string       `json:"boundedAlluxioCluster"`
+	Phase                 *DatasetPhase `json:"phase"`
 }

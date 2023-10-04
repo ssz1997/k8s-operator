@@ -23,5 +23,5 @@ type Unloader interface {
 	runtime.Object
 
 	GetStatus() *alluxiov1alpha1.UnloadStatus
-	GetUnloadDatasetName() string
+	DatasetName() *string
 }

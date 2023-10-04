@@ -42,7 +42,7 @@ type AlluxioClusterReconcileReqCtx struct {
 
 func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger.Infof("Reconciling AlluxioCluster %s", req.NamespacedName.String())
-	ctx := AlluxioClusterReconcileReqCtx{
+	ctx := &AlluxioClusterReconcileReqCtx{
 		Client:         r.Client,
 		Context:        context,
 		NamespacedName: req.NamespacedName,
@@ -56,7 +56,7 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
-		Name:      alluxioCluster.Spec.Dataset,
+		Name:      *alluxioCluster.Spec.Dataset,
 		Namespace: req.Namespace,
 	}
 	ctx.Datasetter = dataset
@@ -87,7 +87,7 @@ func GetAlluxioClusterFromK8sApiServer(r client.Reader, namespacedName types.Nam
 	return nil
 }
 
-func DeleteClusterIfNeeded(ctx AlluxioClusterReconcileReqCtx) error {
+func DeleteClusterIfNeeded(ctx *AlluxioClusterReconcileReqCtx) error {
 	if ctx.AlluxioClusterer.IsDeleted() {
 		if err := DeleteConfYamlFileIfExist(ctx.NamespacedName); err != nil {
 			return err
@@ -95,9 +95,9 @@ func DeleteClusterIfNeeded(ctx AlluxioClusterReconcileReqCtx) error {
 		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
 			return err
 		}
-		if ctx.Datasetter.GetStatus().Phase != alluxiov1alpha1.DatasetPhaseNotExist {
-			ctx.Datasetter.GetStatus().Phase = alluxiov1alpha1.DatasetPhasePending
-			ctx.Datasetter.GetStatus().BoundedAlluxioCluster = ""
+		if *ctx.Datasetter.GetStatus().Phase != alluxiov1alpha1.DatasetPhaseNotExist {
+			pending := alluxiov1alpha1.DatasetPhasePending
+			ctx.Datasetter.GetStatus().Phase = &pending
 			if err := updateDatasetStatus(ctx); err != nil {
 				return err
 			}
@@ -109,8 +109,8 @@ func DeleteClusterIfNeeded(ctx AlluxioClusterReconcileReqCtx) error {
 	return nil
 }
 
-func CreateAlluxioClusterIfNeeded(ctx AlluxioClusterReconcileReqCtx) error {
-	if ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhaseNone || ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhasePending {
+func CreateAlluxioClusterIfNeeded(ctx *AlluxioClusterReconcileReqCtx) error {
+	if *ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhaseNone || *ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhasePending {
 		if err := finalizer.AddDummyFinalizerIfNotExist(ctx.Client, ctx.AlluxioClusterer, ctx.Context); err != nil {
 			return err
 		}

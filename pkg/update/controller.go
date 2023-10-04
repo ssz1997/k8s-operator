@@ -62,14 +62,15 @@ func (r *UpdateReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      update.Spec.Dataset,
+		Name:      *update.Spec.Dataset,
 	}
 	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
-		update.Status.Phase = alluxiov1alpha1.UpdatePhaseWaiting
+	if *dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
+		waiting := alluxiov1alpha1.UpdatePhaseWaiting
+		update.Status.Phase = &waiting
 		return UpdateUpdateStatus(ctx)
 	}
 
@@ -77,13 +78,13 @@ func (r *UpdateReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	ctx.AlluxioClusterer = alluxioCluster
 	alluxioNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
-		Name:      dataset.Status.BoundedAlluxioCluster,
+		Name:      *dataset.Status.BoundedAlluxioCluster,
 	}
 	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	switch update.Status.Phase {
+	switch *update.Status.Phase {
 	case alluxiov1alpha1.UpdatePhaseNone, alluxiov1alpha1.UpdatePhaseWaiting:
 		return CreateUpdateJob(ctx)
 	case alluxiov1alpha1.UpdatePhaseUpdating:
@@ -111,14 +112,16 @@ func WaitUpdateJobFinish(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 	if updateJob.Status.Succeeded == 1 {
-		ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseUpdated
+		updated := alluxiov1alpha1.UpdatePhaseUpdated
+		ctx.Updater.GetStatus().Phase = &updated
 		if _, err := UpdateUpdateStatus(ctx); err != nil {
 			logger.Errorf("Data is updated but failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	} else if updateJob.Status.Failed == 1 {
-		ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseFailed
+		failed := alluxiov1alpha1.UpdatePhaseFailed
+		ctx.Updater.GetStatus().Phase = &failed
 		if _, err := UpdateUpdateStatus(ctx); err != nil {
 			logger.Errorf("Failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err

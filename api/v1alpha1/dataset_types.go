@@ -19,11 +19,11 @@ package v1alpha1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type DatasetSpec struct {
-	Dataset DatasetConf `json:"dataset" yaml:"dataset"`
+	Dataset *DatasetConf `json:"dataset" yaml:"dataset"`
 }
 
 type DatasetConf struct {
-	Path        string            `json:"path" yaml:"path"`
+	Path        *string           `json:"path" yaml:"path"`
 	Credentials map[string]string `json:"credentials,omitemptty" yaml:"credentials,omitempty"`
 }
 
@@ -37,8 +37,8 @@ type Dataset struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DatasetSpec   `json:"spec,omitempty"`
-	Status DatasetStatus `json:"status,omitempty"`
+	Spec   *DatasetSpec   `json:"spec,omitempty"`
+	Status *DatasetStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -23,5 +23,5 @@ const (
 
 // LoadStatus defines the observed state of Load
 type LoadStatus struct {
-	Phase LoadPhase `json:"phase"`
+	Phase *LoadPhase `json:"phase"`
 }

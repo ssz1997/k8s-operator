@@ -22,6 +22,6 @@ type Updater interface {
 	metav1.Object
 	runtime.Object
 
-	GetUpdatePath() string
+	Path() *string
 	GetStatus() *alluxiov1alpha1.UpdateStatus
 }

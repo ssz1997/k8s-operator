@@ -11,10 +11,10 @@
 
 package v1alpha1
 
-func (u *Update) GetUpdatePath() string {
+func (u *Update) Path() *string {
 	return u.Spec.Path
 }
 
 func (u *Update) GetStatus() *UpdateStatus {
-	return &u.Status
+	return u.Status
 }
