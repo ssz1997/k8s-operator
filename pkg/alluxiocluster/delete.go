@@ -20,7 +20,7 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func DeleteAlluxioClusterIfExist(namespacedName types.NamespacedName) error {
+func DeleteAlluxioClusterIfExists(namespacedName types.NamespacedName) error {
 	logger.Infof("Uninstalling Alluxio cluster %s.", namespacedName.String())
 
 	helmCtx := utils.HelmContext{

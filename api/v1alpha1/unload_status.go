@@ -21,5 +21,5 @@ const (
 
 // UnloadStatus defines the observed state of Unload
 type UnloadStatus struct {
-	Phase *UnloadPhase `json:"phase"`
+	Phase UnloadPhase `json:"phase"`
 }

@@ -38,7 +38,7 @@ func CreateAlluxioClusterIfNotExist(ctx *AlluxioClusterReconcileReqCtx) error {
 
 	logger.Infof("Creating Alluxio cluster %s.", ctx.NamespacedName.String())
 	// Construct config.yaml file
-	clusterYaml, err := ctx.AlluxioClusterer.SpecJson()
+	clusterYaml, err := ctx.AlluxioClusterer.SpecYaml()
 	if err != nil {
 		return err
 	}
@@ -70,8 +70,8 @@ func CreateAlluxioClusterIfNotExist(ctx *AlluxioClusterReconcileReqCtx) error {
 	}
 	if err := utils.HelmInstall(helmCtx); err != nil {
 		logger.Errorf("error installing helm release. Uninstalling...")
-		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
-			logger.Errorf("failed to delete failed helm release %s: %v", ctx.NamespacedName.String(), err)
+		if err := DeleteAlluxioClusterIfExists(ctx.NamespacedName); err != nil {
+			logger.Errorf("failed to delete failed helm release %s: %v", ctx.NamespacedName.String(), err.Error())
 			return err
 		}
 	}

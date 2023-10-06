@@ -40,7 +40,7 @@ type AlluxioClusterReconcileReqCtx struct {
 	types.NamespacedName
 }
 
-func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (result ctrl.Result, err error) {
 	logger.Infof("Reconciling AlluxioCluster %s", req.NamespacedName.String())
 	ctx := &AlluxioClusterReconcileReqCtx{
 		Client:         r.Client,
@@ -50,8 +50,8 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 
 	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
 	ctx.AlluxioClusterer = alluxioCluster
-	if err := GetAlluxioClusterFromK8sApiServer(r, req.NamespacedName, alluxioCluster); err != nil {
-		return ctrl.Result{}, err
+	if err = FetchAlluxioClusterFromK8sApiServer(r, req.NamespacedName, alluxioCluster); err != nil {
+		return
 	}
 
 	dataset := &alluxiov1alpha1.Dataset{}
@@ -60,22 +60,22 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 		Namespace: req.Namespace,
 	}
 	ctx.Datasetter = dataset
-	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
-		return ctrl.Result{}, err
+	if err = datasetPkg.FetchDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+		return
 	}
 
-	if err := DeleteClusterIfNeeded(ctx); err != nil {
-		return ctrl.Result{}, err
+	if err = DeleteClusterIfNeeded(ctx); err != nil {
+		return
 	}
 
-	if err := CreateAlluxioClusterIfNeeded(ctx); err != nil {
-		return ctrl.Result{}, err
+	if err = CreateAlluxioClusterIfNeeded(ctx); err != nil {
+		return
 	}
 
 	return UpdateStatus(ctx)
 }
 
-func GetAlluxioClusterFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, alluxioCluster *alluxiov1alpha1.AlluxioCluster) error {
+func FetchAlluxioClusterFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, alluxioCluster *alluxiov1alpha1.AlluxioCluster) error {
 	if err := r.Get(context.TODO(), namespacedName, alluxioCluster); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Infof("Alluxio cluster %s not found. It is being deleted or already deleted.", namespacedName.String())
@@ -92,12 +92,11 @@ func DeleteClusterIfNeeded(ctx *AlluxioClusterReconcileReqCtx) error {
 		if err := DeleteConfYamlFileIfExist(ctx.NamespacedName); err != nil {
 			return err
 		}
-		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
+		if err := DeleteAlluxioClusterIfExists(ctx.NamespacedName); err != nil {
 			return err
 		}
-		if *ctx.Datasetter.GetStatus().Phase != alluxiov1alpha1.DatasetPhaseNotExist {
-			pending := alluxiov1alpha1.DatasetPhasePending
-			ctx.Datasetter.GetStatus().Phase = &pending
+		if ctx.Datasetter.GetStatus().Phase != alluxiov1alpha1.DatasetPhaseNotExist {
+			ctx.Datasetter.GetStatus().Phase = alluxiov1alpha1.DatasetPhasePending
 			if err := updateDatasetStatus(ctx); err != nil {
 				return err
 			}
@@ -110,7 +109,7 @@ func DeleteClusterIfNeeded(ctx *AlluxioClusterReconcileReqCtx) error {
 }
 
 func CreateAlluxioClusterIfNeeded(ctx *AlluxioClusterReconcileReqCtx) error {
-	if *ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhaseNone || *ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhasePending {
+	if ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhaseNone || ctx.AlluxioClusterer.GetStatus().Phase == alluxiov1alpha1.ClusterPhasePending {
 		if err := finalizer.AddDummyFinalizerIfNotExist(ctx.Client, ctx.AlluxioClusterer, ctx.Context); err != nil {
 			return err
 		}

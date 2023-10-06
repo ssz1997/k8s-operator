@@ -23,5 +23,5 @@ const (
 
 // UpdateStatus defines the observed state of Update
 type UpdateStatus struct {
-	Phase *UpdatePhase `json:"phase"`
+	Phase UpdatePhase `json:"phase"`
 }

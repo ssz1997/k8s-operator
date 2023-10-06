@@ -19,15 +19,15 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
-func DeleteJob(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
+func DeleteJob(ctx *LoadReconcilerReqCtx) (result ctrl.Result, err error) {
 	loadJob, err := getLoadJob(ctx)
 	if err != nil {
-		return ctrl.Result{}, err
+		return
 	}
 	propagationPolicy := metav1.DeletePropagationBackground // for deleting the pod along with the job
-	if err := ctx.Delete(ctx.Context, loadJob, &client.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
+	if err = ctx.Delete(ctx.Context, loadJob, &client.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
 		logger.Errorf("Error deleting load job %s in namespace %s: %v", loadJob.Name, loadJob.Namespace, err)
-		return ctrl.Result{}, err
+		return
 	}
-	return ctrl.Result{}, nil
+	return
 }

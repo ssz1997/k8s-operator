@@ -48,7 +48,7 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	}
 	unload := &alluxiov1alpha1.Unload{}
 	ctx.Unloader = unload
-	if err := GetUnLoadFromK8sApiServer(r, req.NamespacedName, unload); err != nil {
+	if err := FetchUnLoadFromK8sApiServer(r, req.NamespacedName, unload); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -61,13 +61,12 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 		Namespace: req.Namespace,
 		Name:      *unload.Spec.Dataset,
 	}
-	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+	if err := datasetPkg.FetchDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if *dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
-		notExist := alluxiov1alpha1.UnloadPhaseNotExist
-		unload.Status.Phase = &notExist
+	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
+		unload.Status.Phase = alluxiov1alpha1.UnloadPhaseNotExist
 		return UpdateUnloadStatus(ctx)
 	}
 
@@ -77,11 +76,11 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 		Namespace: req.Namespace,
 		Name:      *dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
+	if err := alluxioClusterPkg.FetchAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	switch *unload.Status.Phase {
+	switch unload.Status.Phase {
 	case alluxiov1alpha1.UnloadPhaseNone, alluxiov1alpha1.UnloadPhaseNotExist:
 		return Unload(ctx)
 	default:
@@ -89,7 +88,7 @@ func (r *UnloadReconciler) Reconcile(context context.Context, req ctrl.Request) 
 	}
 }
 
-func GetUnLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, unload *alluxiov1alpha1.Unload) error {
+func FetchUnLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, unload *alluxiov1alpha1.Unload) error {
 	if err := r.Get(context.TODO(), namespacedName, unload); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Infof("Unload object %v not found. It is being deleted or already deleted.", namespacedName.String())

@@ -27,24 +27,23 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func CreateLoadJob(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
+func CreateLoadJob(ctx *LoadReconcilerReqCtx) (result ctrl.Result, err error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	loading := alluxiov1alpha1.LoadPhaseLoading
-	ctx.Loader.GetStatus().Phase = &loading
-	_, err := UpdateLoadStatus(ctx)
+	ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoading
+	_, err = UpdateLoadStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
-		return ctrl.Result{}, err
+		return
 	}
 	loadJob, err := getLoadJobFromYaml()
 	if err != nil {
-		return ctrl.Result{}, err
+		return
 	}
-	constructLoadJob(ctx.AlluxioClusterer, ctx.Loader, loadJob)
-	if err := ctx.Create(ctx.Context, loadJob); err != nil {
+	PropagateLoadJob(ctx.AlluxioClusterer, ctx.Loader, loadJob)
+	if err = ctx.Create(ctx.Context, loadJob); err != nil {
 		logger.Errorf("Failed to load data of dataset %s: %v", ctx.NamespacedName.String(), err)
-		return ctrl.Result{}, err
+		return
 	}
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 }
@@ -62,7 +61,7 @@ func getLoadJobFromYaml() (*batchv1.Job, error) {
 	return loadJob.(*batchv1.Job), nil
 }
 
-func constructLoadJob(alluxio alluxiocluster.AlluxioClusterer, load Loader, loadJob *batchv1.Job) {
+func PropagateLoadJob(alluxio alluxiocluster.AlluxioClusterer, load Loader, loadJob *batchv1.Job) {
 	loadJob.Name = utils.GetLoadJobName(load.GetName())
 	loadJob.Namespace = alluxio.GetNamespace()
 	var imagePullSecrets []corev1.LocalObjectReference

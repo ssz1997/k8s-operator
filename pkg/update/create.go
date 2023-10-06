@@ -30,8 +30,7 @@ import (
 func CreateUpdateJob(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	updating := alluxiov1alpha1.UpdatePhaseUpdating
-	ctx.Updater.GetStatus().Phase = &updating
+	ctx.Updater.GetStatus().Phase = alluxiov1alpha1.UpdatePhaseUpdating
 	_, err := UpdateUpdateStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
@@ -41,7 +40,7 @@ func CreateUpdateJob(ctx *UpdateReconcilerReqCtx) (ctrl.Result, error) {
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	constructUpdateJob(ctx.AlluxioClusterer, ctx.Updater, updateJob)
+	PropagateUpdateJob(ctx.AlluxioClusterer, ctx.Updater, updateJob)
 	if err := ctx.Create(ctx.Context, updateJob); err != nil {
 		logger.Errorf("Failed to update data of dataset %s: %v", ctx.NamespacedName.String(), err)
 		return ctrl.Result{}, err
@@ -62,7 +61,7 @@ func getUpdateJobFromYaml() (*batchv1.Job, error) {
 	return udpateJob.(*batchv1.Job), nil
 }
 
-func constructUpdateJob(alluxio alluxiocluster.AlluxioClusterer, update Updater, updateJob *batchv1.Job) {
+func PropagateUpdateJob(alluxio alluxiocluster.AlluxioClusterer, update Updater, updateJob *batchv1.Job) {
 	updateJob.Name = utils.GetUpdateJobName(update.GetName())
 	updateJob.Namespace = alluxio.GetNamespace()
 	var imagePullSecrets []corev1.LocalObjectReference

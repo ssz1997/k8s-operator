@@ -22,5 +22,5 @@ const (
 
 // AlluxioClusterStatus defines the observed state of AlluxioCluster
 type AlluxioClusterStatus struct {
-	Phase *ClusterPhase `json:"phase"`
+	Phase ClusterPhase `json:"phase"`
 }

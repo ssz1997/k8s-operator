@@ -31,7 +31,7 @@ type AlluxioClusterer interface {
 	PagestoreSpec() *alluxiov1alpha1.PagestoreSpec
 	ProxySpec() *alluxiov1alpha1.ProxySpec
 	ServiceAccountName() *string
-	SpecJson() ([]byte, error)
+	SpecYaml() ([]byte, error)
 	GetStatus() *alluxiov1alpha1.AlluxioClusterStatus
 	IsDeleted() bool
 }

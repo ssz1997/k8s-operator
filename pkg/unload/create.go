@@ -34,8 +34,7 @@ import (
 func Unload(ctx *UnloadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before starting the command instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and redo the same thing, leading to a confusing state.
-	unloaded := alluxiov1alpha1.UnloadPhaseUnLoaded
-	ctx.Unloader.GetStatus().Phase = &unloaded
+	ctx.Unloader.GetStatus().Phase = alluxiov1alpha1.UnloadPhaseUnLoaded
 	_, err := UpdateUnloadStatus(ctx)
 	if err != nil {
 		logger.Infof("Unloading is pending because status was not updated successfully")

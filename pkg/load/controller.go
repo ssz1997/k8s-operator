@@ -42,7 +42,7 @@ type LoadReconcilerReqCtx struct {
 	types.NamespacedName
 }
 
-func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (result ctrl.Result, err error) {
 	ctx := &LoadReconcilerReqCtx{
 		Client:         r.Client,
 		Context:        context,
@@ -50,8 +50,8 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 	}
 	load := &alluxiov1alpha1.Load{}
 	ctx.Loader = load
-	if err := GetLoadFromK8sApiServer(r, req.NamespacedName, load); err != nil {
-		return ctrl.Result{}, err
+	if err = FetchLoadFromK8sApiServer(r, req.NamespacedName, load); err != nil {
+		return
 	}
 
 	if load.ObjectMeta.UID == "" {
@@ -64,13 +64,12 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 		Namespace: req.Namespace,
 		Name:      *load.Spec.Dataset,
 	}
-	if err := datasetPkg.GetDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
-		return ctrl.Result{}, err
+	if err = datasetPkg.FetchDatasetFromK8sApiServer(r, datasetNamespacedName, dataset); err != nil {
+		return
 	}
 
-	if *dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
-		waiting := alluxiov1alpha1.LoadPhaseWaiting
-		load.Status.Phase = &waiting
+	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
+		load.Status.Phase = alluxiov1alpha1.LoadPhaseWaiting
 		return UpdateLoadStatus(ctx)
 	}
 
@@ -80,21 +79,21 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 		Namespace: req.Namespace,
 		Name:      *dataset.Status.BoundedAlluxioCluster,
 	}
-	if err := alluxioClusterPkg.GetAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
-		return ctrl.Result{}, err
+	if err = alluxioClusterPkg.FetchAlluxioClusterFromK8sApiServer(r, alluxioNamespacedName, alluxioCluster); err != nil {
+		return
 	}
 
-	switch *load.Status.Phase {
+	switch load.Status.Phase {
 	case alluxiov1alpha1.LoadPhaseNone, alluxiov1alpha1.LoadPhaseWaiting:
 		return CreateLoadJob(ctx)
 	case alluxiov1alpha1.LoadPhaseLoading:
 		return WaitLoadJobFinish(ctx)
 	default:
-		return ctrl.Result{}, nil
+		return
 	}
 }
 
-func GetLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, load *alluxiov1alpha1.Load) error {
+func FetchLoadFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, load *alluxiov1alpha1.Load) error {
 	if err := r.Get(context.TODO(), namespacedName, load); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Infof("Load object %v not found. It is being deleted or already deleted.", namespacedName.String())
@@ -112,14 +111,14 @@ func WaitLoadJobFinish(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 	if loadJob.Status.Succeeded == 1 {
-		*ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoaded
+		ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseLoaded
 		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Data is loaded but failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
 		}
 		return ctrl.Result{}, nil
 	} else if loadJob.Status.Failed == 1 {
-		*ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseFailed
+		ctx.Loader.GetStatus().Phase = alluxiov1alpha1.LoadPhaseFailed
 		if _, err := UpdateLoadStatus(ctx); err != nil {
 			logger.Errorf("Failed to update status. %v", err)
 			return ctrl.Result{Requeue: true}, err
@@ -144,10 +143,10 @@ func getLoadJob(ctx *LoadReconcilerReqCtx) (*batchv1.Job, error) {
 	return loadJob, nil
 }
 
-func UpdateLoadStatus(ctx *LoadReconcilerReqCtx) (ctrl.Result, error) {
-	if err := ctx.Update(ctx.Context, ctx.Loader); err != nil {
+func UpdateLoadStatus(ctx *LoadReconcilerReqCtx) (result ctrl.Result, err error) {
+	if err = ctx.Update(ctx.Context, ctx.Loader); err != nil {
 		logger.Errorf("Failed updating load job status: %v", err)
-		return ctrl.Result{}, err
+		return
 	}
 	return ctrl.Result{RequeueAfter: 15 * time.Second}, nil
 }

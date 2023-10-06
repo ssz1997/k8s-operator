@@ -49,7 +49,7 @@ func (a *AlluxioCluster) ServiceAccountName() *string {
 	return a.Spec.ServiceAccountName
 }
 
-func (a *AlluxioCluster) SpecJson() ([]byte, error) {
+func (a *AlluxioCluster) SpecYaml() ([]byte, error) {
 	return yaml.Marshal(a.Spec)
 }
 
