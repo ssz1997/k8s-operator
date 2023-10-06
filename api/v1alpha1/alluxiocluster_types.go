@@ -151,38 +151,6 @@ type FuseSpec struct {
 	User           *int              `json:"user,omitempty" yaml:"user,omitempty"`
 }
 
-type ControllerPluginSpec struct {
-	Controller  ControllerSpec  `json:"controller,omitempty" yaml:"controller,omitempty"`
-	Provisioner ProvisionerSpec `json:"provisioner,omitempty" yaml:"provisioner,omitempty"`
-}
-
-type ProvisionerSpec struct {
-	Image     string        `json:"image,omitempty" yaml:"image,omitempty"`
-	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
-}
-
-type ControllerSpec struct {
-	Image     string        `json:"image,omitempty" yaml:"image,omitempty"`
-	ImageTag  string        `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
-	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
-}
-
-type NodePluginSpec struct {
-	DriverRegistrar DriverRegistrarSpec `json:"driverRegistrar,omitempty" yaml:"driverRegistrar,omitempty"`
-	NodeServer      NodeServerSpec      `json:"nodeserver,omitempty" yaml:"nodeserver,omitempty"`
-}
-
-type DriverRegistrarSpec struct {
-	Image     string        `json:"image,omitempty" yaml:"image,omitempty"`
-	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
-}
-
-type NodeServerSpec struct {
-	Image     string        `json:"image,omitempty" yaml:"image,omitempty"`
-	ImageTag  string        `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
-	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
-}
-
 type ResourcesSpec struct {
 	Limits   CpuMemSpec `json:"limits,omitempty" yaml:"limits,omitempty"`
 	Requests CpuMemSpec `json:"requests,omitempty" yaml:"requests,omitempty"`
