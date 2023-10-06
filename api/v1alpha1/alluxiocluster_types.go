@@ -22,7 +22,7 @@ import (
 type AlluxioClusterSpec struct {
 	Dataset *string `json:"dataset" yaml:"dataset"`
 
-	NameOverride       *string             `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
+	NameOverride       *string             `json:"nameOverride,omitempty" yaml:"nameOverride,omitempty"`
 	Image              *string             `json:"image,omitempty" yaml:"image,omitempty"`
 	ImageTag           *string             `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
 	ImagePullPolicy    *string             `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
