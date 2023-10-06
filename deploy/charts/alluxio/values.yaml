@@ -353,12 +353,21 @@ etcd:
     peer:
       enableAuthentication: false
     rbac:
-      allowNoneAuthentication: true
       create: false
     token:
       enabled: false
-# Set num of etcd instances, it needs to be a odd number
-#  replicaCount: 3
+  # Set num of etcd instances, it needs to be an odd number
+  replicaCount: 1
+   # Resources allocated to the containers running ETCD
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "0.5Gi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  # NodeSelector for scheduling ETCD
+  nodeSelector: {}
 
 ##  Metrics System ##
 
