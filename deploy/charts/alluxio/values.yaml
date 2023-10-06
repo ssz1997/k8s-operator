@@ -26,7 +26,7 @@ imagePullPolicy: IfNotPresent
 # imagePullSecrets:
 #   - ecr
 #   - dev
-imagePullSecrets:
+imagePullSecrets: []
 
 # Security Context
 user: 1000
@@ -39,11 +39,10 @@ hostNetwork: false
 # If hostNetwork is false, dnsPolicy defaults to ClusterFirst.
 # If hostNetwork is true, dnsPolicy defaults to ClusterFirstWithHostNet.
 # Use this property to override the default value.
-dnsPolicy:
+dnsPolicy: ClusterFirst
 
-# Service Account
-# If not specified, 'default' ServiceAccount of the namespace shall be used for all Alluxio pods
-serviceAccountName:
+# Service Account used for all Alluxio pods
+serviceAccountName: default
 
 # HostAliases is an optional list of hostnames and IPs that will be injected into all pods,
 # for providing the mapping between hostnames and IPs of services not in the K8s cluster, like HDFS.
@@ -53,13 +52,13 @@ serviceAccountName:
 #     hostnames:
 #       - "example1.com"
 #       - "example2.com"
-hostAliases:
+hostAliases: []
 
 # Use labels to run Alluxio on a subset of the K8s nodes. Format:
 # nodeSelector:
 #   <lable key1>: <label value1>
 #   <label key2>: <label value2>
-nodeSelector:
+nodeSelector: {}
 
 # A list of K8s Node taints to allow scheduling on. Format:
 # tolerations:
@@ -67,13 +66,13 @@ nodeSelector:
 #     operator: ["Equal" | "Exists"]
 #     value: <value>
 #     effect: ["NoSchedule" | "NoExecute" | "PreferNoSchedule"]
-tolerations:
+tolerations: []
 
 # Site properties for all Alluxio components
-properties:
+properties: {}
 
 # JVM options common to all Alluxio components
-jvmOptions:
+jvmOptions: []
 
 
 ## Mounts ##
@@ -92,25 +91,25 @@ hostPathForLogging: true
 #    <hostPath/name of PVC/ConfigMap/Secret>: <mountPath>
 #  proxy: # Mounted into Alluxio proxy container(s)
 #    <hostPath/name of PVC/ConfigMap/Secret>: <mountPath>
-hostPaths:
+hostPaths: {}
 
-pvcMounts:
+pvcMounts: {}
 
-configMaps:
+configMaps: {}
 
-secrets:
+secrets: {}
 
 
 ## Dataset ##
 
 dataset:
   # The path of the dataset. For example, s3://my-bucket/dataset
-  path:
+  path: ""
   # Any credentials for Alluxio to access the dataset. For example,
   # credentials:
   #   aws.accessKeyId: XXXXX
   #   aws.secretKey: xxxx
-  credentials:
+  credentials: {}
 
 
 ## Alluxio Master ##
@@ -126,9 +125,9 @@ master:
   # env:
   #   <key1>: <value1>
   #   <key2>: <value2>
-  env:
+  env: {}
   # A list of JVM options specific to Alluxio masters
-  jvmOptions:
+  jvmOptions: []
   # Resources allocated to the containers running Alluxio masters
   resources:
     limits:
@@ -196,9 +195,9 @@ worker:
   # env:
   #   <key1>: <value1>
   #   <key2>: <value2>
-  env:
+  env: {}
   # A list of JVM options specific to Alluxio workers
-  jvmOptions:
+  jvmOptions: []
   # Resources allocated to the containers running Alluxio workers
   resources:
     limits:
@@ -272,9 +271,9 @@ proxy:
   # env:
   #   <key1>: <value1>
   #   <key2>: <value2>
-  env:
+  env: {}
   # A list of JVM options specific to Alluxio proxy
-  jvmOptions:
+  jvmOptions: []
   # Resources allocated to the containers running Alluxio proxies
   resources:
     requests:
@@ -308,7 +307,7 @@ fuse:
   # env:
   #   <key1>: <value1>
   #   <key2>: <value2>
-  env:
+  env: {}
   # A list of JVM options specific to Alluxio Fuse
   jvmOptions:
     - "-XX:MaxDirectMemorySize=2g"
