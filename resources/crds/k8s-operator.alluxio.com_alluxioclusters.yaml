@@ -89,24 +89,18 @@ spec:
                           enableAuthentication:
                             type: boolean
                         type: object
-                      peer:
-                        properties:
-                          enableAuthentication:
-                            type: boolean
-                        type: object
-                      rbac:
-                        properties:
-                          create:
-                            type: boolean
-                        type: object
-                      token:
-                        properties:
-                          enabled:
-                            type: boolean
-                        type: object
                     type: object
                   enabled:
                     type: boolean
+                  image:
+                    properties:
+                      registry:
+                        type: string
+                      repository:
+                        type: string
+                      tag:
+                        type: string
+                    type: object
                   nodeSelector:
                     additionalProperties:
                       type: string
