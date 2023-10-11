@@ -84,14 +84,9 @@ spec:
                 properties:
                   auth:
                     properties:
-                      rbac:
+                      client:
                         properties:
-                          create:
-                            type: boolean
-                        type: object
-                      token:
-                        properties:
-                          enabled:
+                          enableAuthentication:
                             type: boolean
                         type: object
                     type: object
@@ -99,23 +94,12 @@ spec:
                     type: boolean
                   image:
                     properties:
-                      resources:
-                        properties:
-                          limits:
-                            properties:
-                              cpu:
-                                type: string
-                              memory:
-                                type: string
-                            type: object
-                          requests:
-                            properties:
-                              cpu:
-                                type: string
-                              memory:
-                                type: string
-                            type: object
-                        type: object
+                      registry:
+                        type: string
+                      repository:
+                        type: string
+                      tag:
+                        type: string
                     type: object
                   nodeSelector:
                     additionalProperties:
@@ -123,6 +107,23 @@ spec:
                     type: object
                   replicaCount:
                     type: integer
+                  resources:
+                    properties:
+                      limits:
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                        type: object
+                      requests:
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                        type: object
+                    type: object
                 required:
                 - enabled
                 type: object

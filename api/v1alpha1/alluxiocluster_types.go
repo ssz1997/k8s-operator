@@ -223,28 +223,27 @@ type AlluxioMonitorSpec struct {
 }
 
 type EtcdSpec struct {
-	Enabled      *bool             `json:"enabled" yaml:"enabled"`
+	Enabled *bool `json:"enabled" yaml:"enabled"`
+
 	Auth         EtcdAuthSpec      `json:"auth,omitempty" yaml:"auth,omitempty"`
 	Image        EtcdImageSpec     `json:"image,omitempty" yaml:"image,omitempty"`
 	NodeSelector map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
 	ReplicaCount int               `json:"replicaCount,omitempty" yaml:"replicaCount,omitempty"`
+	Resources    ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
 }
 
 type EtcdAuthSpec struct {
-	Rbac  EtcdAuthRbacSpec  `json:"rbac,omitempty" yaml:"rbac,omitempty"`
-	Token EtcdAuthTokenSpec `json:"token,omitempty" yaml:"token,omitempty"`
+	Client EtcdAuthClientSpec `json:"client,omitempty" yaml:"client,omitempty"`
 }
 
-type EtcdAuthRbacSpec struct {
-	Create *bool `json:"create,omitempty" yaml:"create,omitempty"`
-}
-
-type EtcdAuthTokenSpec struct {
-	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+type EtcdAuthClientSpec struct {
+	EnableAuthentication *bool `json:"enableAuthentication,omitempty" yaml:"enableAuthentication,omitempty"`
 }
 
 type EtcdImageSpec struct {
-	Resources ResourcesSpec `json:"resources,omitempty" yaml:"resources,omitempty"`
+	Registry   *string `json:"registry,omitempty" yaml:"registry,omitempty"`
+	Repository *string `json:"repository,omitempty" yaml:"repository,omitempty"`
+	Tag        *string `json:"tag,omitempty" yaml:"tag,omitempty"`
 }
 
 // +kubebuilder:object:root=true
