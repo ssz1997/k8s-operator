@@ -83,15 +83,17 @@ hostPathForLogging: true
 
 # Mount Persistent Volume Claims, ConfigMaps, and Secrets into different Alluxio components.
 # Format:
-# [pvcMounts | configMaps | secrets]:
+# [hostPaths | pvcMounts | configMaps | secrets]:
 #  master: # Mounted into Alluxio master container(s)
-#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#    <hostPath/name of PVC/ConfigMap/Secret/>: <mountPath>
 #  worker: # Mounted into Alluxio worker container(s)
-#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#    <hostPath/name of PVC/ConfigMap/Secret>: <mountPath>
 #  fuse: # Mounted into Alluxio fuse container(s)
-#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#    <hostPath/name of PVC/ConfigMap/Secret>: <mountPath>
 #  proxy: # Mounted into Alluxio proxy container(s)
-#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#    <hostPath/name of PVC/ConfigMap/Secret>: <mountPath>
+hostPaths:
+
 pvcMounts:
 
 configMaps:
