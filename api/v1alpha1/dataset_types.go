@@ -24,7 +24,7 @@ type DatasetSpec struct {
 
 type DatasetConf struct {
 	Path        *string           `json:"path" yaml:"path"`
-	Credentials map[string]string `json:"credentials,omitemptty" yaml:"credentials,omitempty"`
+	Credentials map[string]string `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -37,8 +37,8 @@ type Dataset struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *DatasetSpec   `json:"spec,omitempty"`
-	Status *DatasetStatus `json:"status,omitempty"`
+	Spec   DatasetSpec   `json:"spec,omitempty"`
+	Status DatasetStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

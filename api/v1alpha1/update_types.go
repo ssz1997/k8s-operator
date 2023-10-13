@@ -27,8 +27,8 @@ type Update struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *UpdateSpec   `json:"spec,omitempty"`
-	Status *UpdateStatus `json:"status,omitempty"`
+	Spec   UpdateSpec   `json:"spec,omitempty"`
+	Status UpdateStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -14,6 +14,8 @@ package utils
 import (
 	"os/exec"
 
+	"go.uber.org/config"
+
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
@@ -22,6 +24,10 @@ type HelmContext struct {
 	ConfigFilePath string
 	Namespace      string
 	ReleaseName    string
+}
+
+type HelmChartSpec interface {
+	YAMLToYaml(*config.YAML) ([]byte, error)
 }
 
 func HelmInstall(ctx HelmContext) error {

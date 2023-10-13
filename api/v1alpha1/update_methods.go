@@ -16,5 +16,5 @@ func (u *Update) Path() *string {
 }
 
 func (u *Update) GetStatus() *UpdateStatus {
-	return u.Status
+	return &u.Status
 }

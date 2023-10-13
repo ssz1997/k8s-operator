@@ -401,7 +401,7 @@ metrics:
     # Hostname of Graphite server
     hostname: NONE
     # Port of Graphite server
-    port: NONE
+    port: 8080
     # Poll period
     period: 10
     # Unit of poll period

@@ -21,6 +21,6 @@ import (
 type Datasetter interface {
 	metav1.Object
 	runtime.Object
-	Conf() *alluxiov1alpha1.DatasetConf
+	SpecYaml() ([]byte, error)
 	GetStatus() *alluxiov1alpha1.DatasetStatus
 }

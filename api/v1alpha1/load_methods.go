@@ -16,5 +16,5 @@ func (l *Load) Path() *string {
 }
 
 func (l *Load) GetStatus() *LoadStatus {
-	return l.Status
+	return &l.Status
 }

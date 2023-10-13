@@ -11,10 +11,12 @@
 
 package v1alpha1
 
-func (d *Dataset) Conf() *DatasetConf {
-	return d.Spec.Dataset
+import "sigs.k8s.io/yaml"
+
+func (d *Dataset) SpecYaml() ([]byte, error) {
+	return yaml.Marshal(d.Spec)
 }
 
 func (d *Dataset) GetStatus() *DatasetStatus {
-	return d.Status
+	return &d.Status
 }

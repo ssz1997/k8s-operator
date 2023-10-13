@@ -18,20 +18,19 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 type ComponentStatusReqCtx struct {
 	client.Client
 	context.Context
-	*alluxiov1alpha1.AlluxioCluster
+	ClusterNameOverride string
 	types.NamespacedName
 }
 
 func GetMasterStatus(ctx ComponentStatusReqCtx) (*v1.StatefulSet, error) {
 	master := &v1.StatefulSet{}
-	if err := ctx.Get(ctx.Context, GetMasterStatefulSetNamespacedName(*ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), master); err != nil {
+	if err := ctx.Get(ctx.Context, GetMasterStatefulSetNamespacedName(ctx.ClusterNameOverride, ctx.NamespacedName), master); err != nil {
 		logger.Errorf("Error getting Alluxio master StatefulSet from k8s api server: %v", err)
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func GetMasterStatus(ctx ComponentStatusReqCtx) (*v1.StatefulSet, error) {
 
 func GetWorkerStatus(ctx ComponentStatusReqCtx) (*v1.Deployment, error) {
 	worker := &v1.Deployment{}
-	if err := ctx.Get(ctx.Context, GetWorkerDeploymentNamespacedName(*ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), worker); err != nil {
+	if err := ctx.Get(ctx.Context, GetWorkerDeploymentNamespacedName(ctx.ClusterNameOverride, ctx.NamespacedName), worker); err != nil {
 		logger.Errorf("Error getting Alluxio worker Deployment from k8s api server: %v", err)
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func GetWorkerStatus(ctx ComponentStatusReqCtx) (*v1.Deployment, error) {
 
 func GetFuseStatus(ctx ComponentStatusReqCtx) (*v1.DaemonSet, error) {
 	fuse := &v1.DaemonSet{}
-	if err := ctx.Get(ctx.Context, GetFuseDaemonSetNamespacedName(*ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), fuse); err != nil {
+	if err := ctx.Get(ctx.Context, GetFuseDaemonSetNamespacedName(ctx.ClusterNameOverride, ctx.NamespacedName), fuse); err != nil {
 		logger.Errorf("Error getting Alluxio fuse DaemonSet from k8s api server: %v", err)
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func GetFuseStatus(ctx ComponentStatusReqCtx) (*v1.DaemonSet, error) {
 
 func GetProxyStatus(ctx ComponentStatusReqCtx) (*v1.DaemonSet, error) {
 	proxy := &v1.DaemonSet{}
-	if err := ctx.Get(ctx.Context, GetProxyDaemonSetNamespacedName(*ctx.AlluxioCluster.Spec.NameOverride, ctx.NamespacedName), proxy); err != nil {
+	if err := ctx.Get(ctx.Context, GetProxyDaemonSetNamespacedName(ctx.ClusterNameOverride, ctx.NamespacedName), proxy); err != nil {
 		logger.Errorf("Error getting Alluxio proxy DaemonSet from k8s api server: %v", err)
 		return nil, err
 	}

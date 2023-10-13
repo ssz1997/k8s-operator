@@ -26,8 +26,8 @@ type Unload struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *UnloadSpec   `json:"spec,omitempty"`
-	Status *UnloadStatus `json:"status,omitempty"`
+	Spec   UnloadSpec   `json:"spec,omitempty"`
+	Status UnloadStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

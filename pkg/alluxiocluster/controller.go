@@ -56,7 +56,7 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 
 	dataset := &alluxiov1alpha1.Dataset{}
 	datasetNamespacedName := types.NamespacedName{
-		Name:      *alluxioCluster.Spec.Dataset,
+		Name:      *alluxioCluster.Spec.DatasetName,
 		Namespace: req.Namespace,
 	}
 	ctx.Datasetter = dataset
@@ -75,7 +75,7 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 	return UpdateStatus(ctx)
 }
 
-func FetchAlluxioClusterFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, alluxioCluster *alluxiov1alpha1.AlluxioCluster) error {
+func FetchAlluxioClusterFromK8sApiServer(r client.Reader, namespacedName types.NamespacedName, alluxioCluster AlluxioClusterer) error {
 	if err := r.Get(context.TODO(), namespacedName, alluxioCluster); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Infof("Alluxio cluster %s not found. It is being deleted or already deleted.", namespacedName.String())

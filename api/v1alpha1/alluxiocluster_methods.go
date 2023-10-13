@@ -11,10 +11,14 @@
 
 package v1alpha1
 
-import "sigs.k8s.io/yaml"
+import (
+	"sigs.k8s.io/yaml"
+
+	"github.com/alluxio/k8s-operator/pkg/utils"
+)
 
 func (a *AlluxioCluster) DatasetName() *string {
-	return a.Spec.Dataset
+	return a.Spec.DatasetName
 }
 
 func (a *AlluxioCluster) FuseSpec() *FuseSpec {
@@ -54,9 +58,13 @@ func (a *AlluxioCluster) SpecYaml() ([]byte, error) {
 }
 
 func (a *AlluxioCluster) GetStatus() *AlluxioClusterStatus {
-	return a.Status
+	return &a.Status
 }
 
 func (a *AlluxioCluster) IsDeleted() bool {
 	return a.DeletionTimestamp != nil
+}
+
+func (a *AlluxioCluster) HelmChartValues() utils.HelmChartSpec {
+	return &a.HelmChartSpec
 }

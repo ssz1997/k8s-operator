@@ -16,5 +16,5 @@ func (u *Unload) DatasetName() *string {
 }
 
 func (u *Unload) GetStatus() *UnloadStatus {
-	return u.Status
+	return &u.Status
 }

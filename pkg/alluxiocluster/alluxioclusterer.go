@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
 type AlluxioClusterer interface {
@@ -34,4 +35,5 @@ type AlluxioClusterer interface {
 	SpecYaml() ([]byte, error)
 	GetStatus() *alluxiov1alpha1.AlluxioClusterStatus
 	IsDeleted() bool
+	HelmChartValues() utils.HelmChartSpec
 }

@@ -27,7 +27,7 @@ func UpdateDatasetStatus(ctx *DatasetReconcilerReqCtx) (result ctrl.Result, err 
 		return
 	}
 	if upToDateDataset.Status.Phase != ctx.Datasetter.GetStatus().Phase {
-		upToDateDataset.Status = ctx.Datasetter.GetStatus()
+		upToDateDataset.Status = *ctx.Datasetter.GetStatus()
 		if err = ctx.Client.Status().Update(ctx.Context, upToDateDataset); err != nil {
 			logger.Errorf("Error updating dataset %s status: %v", ctx.NamespacedName.String(), err)
 			return
