@@ -38,6 +38,7 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 
 	logger.Infof("Creating Alluxio cluster %s.", ctx.NamespacedName.String())
 	// Construct config.yaml file
+	tweakAlluxioClusterConfig(ctx)
 	clusterYaml, err := yaml.Marshal(ctx.AlluxioCluster.Spec)
 	if err != nil {
 		return err
@@ -76,4 +77,10 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 		}
 	}
 	return nil
+}
+
+func tweakAlluxioClusterConfig(ctx AlluxioClusterReconcileReqCtx) {
+	if ctx.Dataset.Spec.MultiMount != nil && *ctx.Dataset.Spec.MultiMount {
+		ctx.AlluxioCluster.Spec.Properties["alluxio.mount.table.source"] = "ETCD"
+	}
 }
