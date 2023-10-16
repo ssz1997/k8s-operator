@@ -133,7 +133,11 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - umount -l {{ $alluxioFuseMountPoint }};
+              {{- if ne (get .Values.properties "alluxio.mount.table.source") "ETCD" }}
               /entrypoint.sh fuse {{ required "The path of the dataset must be set." .Values.dataset.path }} {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
+              {{- else }}
+              /entrypoint.sh fuse {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
+              {{- end }}
           env:
             - name: ALLUXIO_CLIENT_HOSTNAME
               valueFrom:
