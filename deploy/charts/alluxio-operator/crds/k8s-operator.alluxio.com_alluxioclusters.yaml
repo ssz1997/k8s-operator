@@ -97,21 +97,6 @@ spec:
                           enableAuthentication:
                             type: boolean
                         type: object
-                      peer:
-                        properties:
-                          enableAuthentication:
-                            type: boolean
-                        type: object
-                      rbac:
-                        properties:
-                          create:
-                            type: boolean
-                        type: object
-                      token:
-                        properties:
-                          enabled:
-                            type: boolean
-                        type: object
                     type: object
                   enabled:
                     type: boolean
@@ -4215,21 +4200,6 @@ spec:
                       client:
                         properties:
                           enableAuthentication:
-                            type: boolean
-                        type: object
-                      peer:
-                        properties:
-                          enableAuthentication:
-                            type: boolean
-                        type: object
-                      rbac:
-                        properties:
-                          create:
-                            type: boolean
-                        type: object
-                      token:
-                        properties:
-                          enabled:
                             type: boolean
                         type: object
                     type: object

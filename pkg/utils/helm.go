@@ -27,7 +27,7 @@ type HelmContext struct {
 }
 
 type HelmChartSpec interface {
-	YAMLToYaml(*config.YAML) ([]byte, error)
+	YAMLToBytes(*config.YAML) ([]byte, error)
 }
 
 func HelmInstall(ctx HelmContext) error {

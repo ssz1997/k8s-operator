@@ -244,25 +244,10 @@ type EtcdSpec struct {
 
 type EtcdAuthSpec struct {
 	Client *EtcdAuthClientSpec `json:"client,omitempty" yaml:"client,omitempty"`
-	Peer   *EtcdAuthPeerSpec   `json:"peer,omitempty" yaml:"peer,omitempty"`
-	Rbac   *EtcdAuthRbacSpec   `json:"rbac,omitempty" yaml:"rbac,omitempty"`
-	Token  *EtcdAuthTokenSpec  `json:"token,omitempty" yaml:"token,omitempty"`
 }
 
 type EtcdAuthClientSpec struct {
 	EnableAuthentication *bool `json:"enableAuthentication,omitempty" yaml:"enableAuthentication,omitempty"`
-}
-
-type EtcdAuthPeerSpec struct {
-	EnableAuthentication *bool `json:"enableAuthentication,omitempty" yaml:"enableAuthentication,omitempty"`
-}
-
-type EtcdAuthRbacSpec struct {
-	Create *bool `json:"create,omitempty" yaml:"create,omitempty"`
-}
-
-type EtcdAuthTokenSpec struct {
-	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 }
 
 type EtcdImageSpec struct {
@@ -271,7 +256,7 @@ type EtcdImageSpec struct {
 	Tag        *string `json:"tag,omitempty" yaml:"tag,omitempty"`
 }
 
-func (a *AlluxioClusterHelmChartSpec) YAMLToYaml(configYaml *config.YAML) ([]byte, error) {
+func (a *AlluxioClusterHelmChartSpec) YAMLToBytes(configYaml *config.YAML) ([]byte, error) {
 	if err := configYaml.Get(config.Root).Populate(a); err != nil {
 		return nil, err
 	}
