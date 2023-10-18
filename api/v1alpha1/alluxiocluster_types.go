@@ -33,6 +33,7 @@ type AlluxioClusterSpec struct {
 	DnsPolicy          string             `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
 	ServiceAccountName string             `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
 	HostAliases        []HostAlias        `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`
+	HostPaths          MountSpec          `json:"hostPaths,omitempty" yaml:"hostPaths,omitempty"`
 	NodeSelector       map[string]string  `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
 	Tolerations        []Toleration       `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
 	Properties         map[string]string  `json:"properties,omitempty" yaml:"properties,omitempty"`
