@@ -63,8 +63,6 @@ spec:
                 - credentials
                 - path
                 type: object
-              multipleMountPoints:
-                type: boolean
             required:
             - dataset
             type: object
