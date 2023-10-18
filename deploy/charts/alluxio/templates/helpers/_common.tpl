@@ -92,7 +92,7 @@ resources:
 {{- define "alluxio.volumeMounts" -}}
 {{- $readOnly := .readOnly }}
 {{- range $key, $val := .volumeMounts }}
-- name: {{ $key }}-volume
+- name: {{ $key | replace "/" "-"  | trimAll "-" }}-volume
   mountPath: {{ $val }}
   readOnly: {{ $readOnly }}
 {{- end }}
@@ -117,7 +117,7 @@ resources:
 
 {{- define "alluxio.hostPaths" -}}
 {{- range $key, $val := . }}
-- name: {{ (splitList "/" $key) | last }}-volume
+- name: {{ $key | replace "/" "-" | trimAll "-" }}-volume
   hostPath:
     path: {{ $key }}
     type: Directory

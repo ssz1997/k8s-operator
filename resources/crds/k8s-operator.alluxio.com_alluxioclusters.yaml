@@ -1079,6 +1079,25 @@ spec:
                 type: array
               hostNetwork:
                 type: boolean
+              hostPaths:
+                properties:
+                  fuse:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  master:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  proxy:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  worker:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
               image:
                 type: string
               imagePullPolicy:
