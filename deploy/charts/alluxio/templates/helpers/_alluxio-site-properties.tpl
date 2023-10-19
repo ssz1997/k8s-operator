@@ -16,7 +16,9 @@ alluxio.user.short.circuit.enabled=false
 alluxio.master.worker.register.lease.enabled=false
 
 # Common properties
+{{- if ne (get .Values.properties "alluxio.mount.table.source") "ETCD" }}
 alluxio.dora.client.ufs.root={{ .Values.dataset.path }}
+{{- end }}
 {{- range $key, $val := .Values.dataset.credentials }}
 {{ printf "%v=%v" $key $val }}
 {{- end }}
