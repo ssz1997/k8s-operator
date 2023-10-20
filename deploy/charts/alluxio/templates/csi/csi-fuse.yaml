@@ -12,7 +12,10 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
+{{- $hostMountPath := include "alluxio.mount.basePath" "" }}
 {{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse" }}
+{{- $alluxioFuseLogDir := include "alluxio.basePath" "/logs"}}
+{{- $alluxioFuseLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "fuse-log") }}
 
 ---
 kind: ConfigMap
@@ -37,9 +40,11 @@ data:
         role: alluxio-fuse
     spec:
       securityContext:
-        runAsUser: 0 # required for mounting to csi designated path
-        runAsGroup: 0
-        fsGroup: 0
+        runAsUser: {{ .Values.fuse.user }}
+        runAsGroup: {{ .Values.fuse.group }}
+        fsGroup: {{ .Values.fsGroup }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.serviceAccountName }}
       serviceAccountName: {{ .Values.serviceAccountName }}
       {{- end }}
@@ -47,6 +52,14 @@ data:
     {{ include "alluxio.imagePullSecrets" . | indent 2 }}
       {{- end}}
       initContainers:
+      - name: create-alluxio-fuse-dir
+        image: {{ .Values.image }}:{{ .Values.imageTag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: [ "mkdir", "-p", {{ $alluxioFuseMountPoint }}]
+        volumeMounts:
+          - name: alluxio-fuse-mount
+            mountPath: {{ $hostMountPath }}
+      {{- if .Values.master.enabled }}
       - name: wait-master
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         command: ["/bin/sh", "-c"]
@@ -54,33 +67,22 @@ data:
           - until nslookup {{ $fullName }}-master-0;
             do sleep 2;
             done
-        volumeMounts:
-        - name: {{ $fullName }}-alluxio-conf
-          mountPath: /opt/alluxio/conf
+      {{- end }}
       containers:
         - name: alluxio-fuse
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           {{- if .Values.fuse.resources }}
-          resources:
-            {{- if .Values.fuse.resources.limits }}
-            limits:
-              cpu: {{ .Values.fuse.resources.limits.cpu }}
-              memory: {{ .Values.fuse.resources.limits.memory }}
-            {{- end }}
-            {{- if .Values.fuse.resources.requests }}
-              cpu: {{ .Values.fuse.resources.requests.cpu }}
-              memory: {{ .Values.fuse.resources.requests.memory }}
-            {{- end }}
+{{ include "alluxio.resources" .Values.fuse.resources | indent 10 }}
           {{- end }}
-          command: [ "/entrypoint.sh" ]
+          command: ["/bin/sh", "-c"]
           args:
-            - fuse
-            - {{ required "The path of the dataset must be set." .Values.dataset.path }}
-            - {{ $alluxioFuseMountPoint }}
-            {{- range .Values.fuse.mountOptions }}
-            - -o {{ . }}
-            {{- end }}
+            - umount -l {{ $alluxioFuseMountPoint }};
+              {{- if ne (get .Values.properties "alluxio.mount.table.source") "ETCD" }}
+              /entrypoint.sh fuse {{ required "The path of the dataset must be set." .Values.dataset.path }} {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
+              {{- else }}
+              /entrypoint.sh fuse {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
+              {{- end }}
           env:
           {{- range $key, $value := .Values.fuse.env }}
           - name: "{{ $key }}"
@@ -88,12 +90,20 @@ data:
           {{- end }}
           securityContext:
             privileged: true # required by bidirectional mount
+          lifecycle:
+            preStop:
+              exec:
+                command: ["fusermount", "-u", {{ $alluxioFuseMountPoint }}]
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: pods-mount-dir
-              mountPath: /var/lib/kubelet
-              mountPropagation: "Bidirectional"
+            - name: alluxio-fuse-mount
+              mountPath: {{ $hostMountPath }}
+              mountPropagation: Bidirectional
+            {{- if .Values.hostPathForLogging }}
+            - name: {{ $alluxioFuseLogVolumeName }}
+              mountPath: {{ $alluxioFuseLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
     {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.fuse "readOnly" true) | indent 8 }}
             {{- end }}
@@ -105,13 +115,19 @@ data:
             {{- end }}
       restartPolicy: Always
       volumes:
-        - name: pods-mount-dir
+        - name: alluxio-fuse-mount
           hostPath:
-            path: /var/lib/kubelet
-            type: Directory
+            path: {{ $hostMountPath }}
+            type: DirectoryOrCreate
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.hostPathForLogging }}
+        - name: {{ $alluxioFuseLogVolumeName }}
+          hostPath:
+            path: {{ .Values.fuse.hostPathForLogs }}
+            type: DirectoryOrCreate
+        {{- end }}
         {{- if .Values.secrets }}
     {{- include "alluxio.secretVolumes" .Values.secrets.fuse | indent 4 }}
         {{- end }}
