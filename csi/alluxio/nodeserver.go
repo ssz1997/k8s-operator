@@ -40,6 +40,8 @@ type nodeServer struct {
 	mutex  sync.Mutex
 }
 
+const alluxioFuseHostPath = "/mnt/alluxio/fuse"
+
 /*
  * When there is no app pod using the pv, the first app pod using the pv would trigger NodeStageVolume().
  * Only after a successful return, NodePublishVolume() is called.
@@ -55,7 +57,6 @@ type nodeServer struct {
 
 func (ns *nodeServer) NodePublishVolume(ctx context.Context, req *csi.NodePublishVolumeRequest) (*csi.NodePublishVolumeResponse, error) {
 	targetPath := req.GetTargetPath()
-	stagingPath := req.GetStagingTargetPath()
 
 	notMnt, err := ensureMountPoint(targetPath)
 	if err != nil {
@@ -67,7 +68,7 @@ func (ns *nodeServer) NodePublishVolume(ctx context.Context, req *csi.NodePublis
 		return &csi.NodePublishVolumeResponse{}, nil
 	}
 
-	args := []string{"--bind", stagingPath, targetPath}
+	args := []string{"--bind", alluxioFuseHostPath, targetPath}
 	command := exec.Command("mount", args...)
 	_, err = command.CombinedOutput()
 	if err != nil {
@@ -109,7 +110,7 @@ func (ns *nodeServer) NodeStageVolume(ctx context.Context, req *csi.NodeStageVol
 		glog.V(3).Infof("Error creating CSI Fuse pod. %+v", err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if err := checkIfMountPointReady(req.GetStagingTargetPath()); err != nil {
+	if err := checkIfMountPointReady(alluxioFuseHostPath); err != nil {
 		glog.V(3).Infof("Mount point is not ready, or error occurs. %+v", err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -126,26 +127,14 @@ func getAndCompleteFusePodObj(ns *nodeServer, req *csi.NodeStageVolumeRequest) (
 		return nil, errors.Wrap(err, "Error getting Fuse pod object from template.")
 	}
 
-	// Append extra information to pod name for uniqueness but not exceed maximum
-	csiFusePodObj.Name = getFusePodName(alluxioNamespacedName.Name, ns.nodeId, req.GetVolumeId())[:64]
+	// Append extra information to pod name for uniqueness
+	csiFusePodObj.Name = getFusePodName(alluxioNamespacedName.Name, ns.nodeId, req.GetVolumeId())
 
 	csiFusePodObj.Namespace = alluxioNamespacedName.Namespace
 
 	// Set node name for scheduling
 	csiFusePodObj.Spec.NodeName = ns.nodeId
 
-	// Set fuse mount point
-	csiFusePodObj.Spec.Containers[0].Args[2] = req.GetStagingTargetPath()
-
-	// Set pre-stop command (umount) in pod lifecycle
-	lifecycle := &v1.Lifecycle{
-		PreStop: &v1.Handler{
-			Exec: &v1.ExecAction{
-				Command: []string{"/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", req.GetStagingTargetPath()},
-			},
-		},
-	}
-	csiFusePodObj.Spec.Containers[0].Lifecycle = lifecycle
 	return csiFusePodObj, nil
 }
 
@@ -187,12 +176,6 @@ func (ns *nodeServer) NodeUnstageVolume(ctx context.Context, req *csi.NodeUnstag
 	podName := getFusePodName(alluxioNamespacedName.Name, ns.nodeId, req.GetVolumeId())
 	if err := ns.client.CoreV1().Pods(alluxioNamespacedName.Namespace).Delete(podName, &metav1.DeleteOptions{}); err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			// Pod not found. Try to clean up the mount point.
-			command := exec.Command("umount", req.GetStagingTargetPath())
-			_, err := command.CombinedOutput()
-			if err != nil {
-				glog.V(3).Infof("Error running command %v: %+v", command, err)
-			}
 			return &csi.NodeUnstageVolumeResponse{}, nil
 		}
 		glog.V(3).Infof("Error deleting pod with name %v. %+v.", podName, err)
@@ -268,5 +251,9 @@ func getFusePodObj(ns *nodeServer, alluxioNamespacedName types.NamespacedName) (
 
 func getFusePodName(clusterName, nodeId, volumeId string) string {
 	volumeIdParts := strings.Split(volumeId, "-")
-	return strings.Join([]string{clusterName, nodeId, volumeIdParts[len(volumeIdParts)-1]}, "-")
+	fusePodName := strings.Join([]string{clusterName, "fuse", nodeId, volumeIdParts[len(volumeIdParts)-1]}, "-")
+	if len(fusePodName) > 64 {
+		fusePodName = fusePodName[:64]
+	}
+	return fusePodName
 }

@@ -119,9 +119,6 @@ spec:
             - until nslookup {{ $fullName }}-master-0;
               do sleep 2;
               done
-          volumeMounts:
-          - name: {{ $fullName }}-alluxio-conf
-            mountPath: /opt/alluxio/conf
         {{- end }}
       containers:
         - name: alluxio-fuse

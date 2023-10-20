@@ -16,7 +16,7 @@ kind: StorageClass
 metadata:
   name: {{ $fullName }}-csi-storage-class
 provisioner: alluxio
-volumeBindingMode: Immediate
+volumeBindingMode: WaitForFirstConsumer
 parameters:
   alluxioClusterName: {{ $fullName }}
   alluxioClusterNamespace: {{ .Release.Namespace }}
