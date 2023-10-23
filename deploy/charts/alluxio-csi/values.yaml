@@ -21,6 +21,12 @@ hostNetwork: false
 dnsPolicy:
 
 controllerPlugin:
+  # NodeSelector for scheduling Alluxio CSI controller
+  nodeSelector: {}
+  # Schedule Alluxio CSI controller with affinity.
+  affinity: {}
+  # Additional tolerations for scheduling Alluxio CSI controller
+  tolerations: []
   provisioner:
     image: registry.k8s.io/sig-storage/csi-provisioner:v2.0.5
     resources:
@@ -39,6 +45,12 @@ controllerPlugin:
         cpu: 10m
         memory: 20Mi
 nodePlugin:
+  # NodeSelector for scheduling Alluxio CSI nodePlugin
+  nodeSelector: {}
+  # Schedule Alluxio CSI nodePlugin with affinity.
+  affinity: {}
+  # Additional tolerations for scheduling Alluxio CSI nodePlugin
+  tolerations: []
   nodeserver:
     resources:
       limits:
