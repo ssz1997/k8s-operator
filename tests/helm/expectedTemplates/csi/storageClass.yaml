@@ -16,7 +16,7 @@ kind: StorageClass
 metadata:
   name: dummy-alluxio-csi-storage-class
 provisioner: alluxio
-volumeBindingMode: Immediate
+volumeBindingMode: WaitForFirstConsumer
 parameters:
   alluxioClusterName: dummy-alluxio
   alluxioClusterNamespace: default

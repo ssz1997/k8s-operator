@@ -16,8 +16,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ $fullName }}-alluxio-csi-fuse-pvc
 spec:
-  accessModes:
-    - ReadWriteOnce
   storageClassName: {{ $fullName }}-csi-storage-class
   resources:
     requests:

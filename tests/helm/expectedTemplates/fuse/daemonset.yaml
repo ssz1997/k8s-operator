@@ -126,9 +126,6 @@ spec:
             - until nslookup dummy-alluxio-master-0;
               do sleep 2;
               done
-          volumeMounts:
-          - name: dummy-alluxio-alluxio-conf
-            mountPath: /opt/alluxio/conf
       containers:
         - name: alluxio-fuse
           image: dummy/dummy:dummy

@@ -22,14 +22,23 @@ data:
         role: alluxio-fuse
     spec:
       securityContext:
-        runAsUser: 0 # required for mounting to csi designated path
-        runAsGroup: 0
-        fsGroup: 0
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      hostNetwork: false
+      dnsPolicy: dummyDnsPolicy
       serviceAccountName: dummyServiceAccountName
       imagePullSecrets:
     - name: dummySecret1
     - name: dummySecret2
       initContainers:
+      - name: create-alluxio-fuse-dir
+        image: dummy/dummy:dummy
+        imagePullPolicy: IfNotPresent
+        command: [ "mkdir", "-p", /mnt/alluxio/fuse]
+        volumeMounts:
+          - name: alluxio-fuse-mount
+            mountPath: /mnt/alluxio
       - name: wait-master
         image: dummy/dummy:dummy
         command: ["/bin/sh", "-c"]
@@ -37,9 +46,6 @@ data:
           - until nslookup dummy-alluxio-master-0;
             do sleep 2;
             done
-        volumeMounts:
-        - name: dummy-alluxio-alluxio-conf
-          mountPath: /opt/alluxio/conf
       containers:
         - name: alluxio-fuse
           image: dummy/dummy:dummy
@@ -48,16 +54,13 @@ data:
             limits:
               cpu: 4
               memory: 4Gi
+            requests:
               cpu: 0.5
               memory: 1Gi
-          command: [ "/entrypoint.sh" ]
+          command: ["/bin/sh", "-c"]
           args:
-            - fuse
-            - /dummy/dataset/path
-            - /mnt/alluxio/fuse
-            - -o allow_other
-            - -o entry_timeout=3600
-            - -o attr_timeout=3600
+            - umount -l /mnt/alluxio/fuse;
+              /entrypoint.sh fuse /dummy/dataset/path /mnt/alluxio/fuse -o allow_other -o entry_timeout=3600 -o attr_timeout=3600
           env:
           - name: "fuseEnvKey1"
             value: "fuseEnvVal1"
@@ -65,12 +68,18 @@ data:
             value: "fuseEnvVal2"
           securityContext:
             privileged: true # required by bidirectional mount
+          lifecycle:
+            preStop:
+              exec:
+                command: ["fusermount", "-u", /mnt/alluxio/fuse]
           volumeMounts:
             - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: pods-mount-dir
-              mountPath: /var/lib/kubelet
-              mountPropagation: "Bidirectional"        
+            - name: alluxio-fuse-mount
+              mountPath: /mnt/alluxio
+              mountPropagation: Bidirectional
+            - name: dummy-alluxio-fuse-log-volume
+              mountPath: /opt/alluxio/logs        
         - name: dummySecretFuse1-volume
           mountPath: /dummyPath1
           readOnly: true
@@ -91,13 +100,17 @@ data:
           readOnly: false
       restartPolicy: Always
       volumes:
-        - name: pods-mount-dir
+        - name: alluxio-fuse-mount
           hostPath:
-            path: /var/lib/kubelet
-            type: Directory
+            path: /mnt/alluxio
+            type: DirectoryOrCreate
         - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: dummy-alluxio-alluxio-conf    
+            name: dummy-alluxio-alluxio-conf
+        - name: dummy-alluxio-fuse-log-volume
+          hostPath:
+            path: /mnt/alluxio/logs/fuse
+            type: DirectoryOrCreate    
     - name: dummySecretFuse1-volume
       secret:
         secretName: dummySecretFuse1

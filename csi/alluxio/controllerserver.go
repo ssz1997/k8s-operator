@@ -36,11 +36,6 @@ type controllerServer struct {
 func (cs *controllerServer) CreateVolume(ctx context.Context, req *csi.CreateVolumeRequest) (*csi.CreateVolumeResponse, error) {
 	volumeID := sanitizeVolumeID(req.GetName())
 
-	if err := cs.Driver.ValidateControllerServiceRequest(csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME); err != nil {
-		glog.V(3).Infof("invalid create volume req: %v", req)
-		return nil, err
-	}
-
 	// Check arguments
 	if len(volumeID) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Name missing in request")
@@ -75,38 +70,6 @@ func (cs *controllerServer) DeleteVolume(ctx context.Context, req *csi.DeleteVol
 	}
 
 	return &csi.DeleteVolumeResponse{}, nil
-}
-
-func (cs *controllerServer) ValidateVolumeCapabilities(ctx context.Context, req *csi.ValidateVolumeCapabilitiesRequest) (*csi.ValidateVolumeCapabilitiesResponse, error) {
-
-	// Check arguments
-	if len(req.GetVolumeId()) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "Volume ID missing in request")
-	}
-	if req.GetVolumeCapabilities() == nil {
-		return nil, status.Error(codes.InvalidArgument, "Volume capabilities missing in request")
-	}
-
-	// We currently only support RWO
-	supportedAccessMode := &csi.VolumeCapability_AccessMode{
-		Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
-	}
-
-	for _, cap := range req.VolumeCapabilities {
-		if cap.GetAccessMode().GetMode() != supportedAccessMode.GetMode() {
-			return &csi.ValidateVolumeCapabilitiesResponse{Message: "Only single node writer is supported"}, nil
-		}
-	}
-
-	return &csi.ValidateVolumeCapabilitiesResponse{
-		Confirmed: &csi.ValidateVolumeCapabilitiesResponse_Confirmed{
-			VolumeCapabilities: []*csi.VolumeCapability{
-				{
-					AccessMode: supportedAccessMode,
-				},
-			},
-		},
-	}, nil
 }
 
 func (cs *controllerServer) ControllerExpandVolume(ctx context.Context, req *csi.ControllerExpandVolumeRequest) (*csi.ControllerExpandVolumeResponse, error) {
