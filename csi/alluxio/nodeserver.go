@@ -57,7 +57,7 @@ const alluxioFuseHostPath = "/mnt/alluxio/fuse"
 
 func (ns *nodeServer) NodePublishVolume(ctx context.Context, req *csi.NodePublishVolumeRequest) (*csi.NodePublishVolumeResponse, error) {
 	targetPath := req.GetTargetPath()
-
+	stagingPath := fmt.Sprintf("%s-%s", alluxioFuseHostPath, req.VolumeId)
 	notMnt, err := ensureMountPoint(targetPath)
 	if err != nil {
 		glog.V(3).Infof("Error checking mount point: %+v.", err)
@@ -68,7 +68,7 @@ func (ns *nodeServer) NodePublishVolume(ctx context.Context, req *csi.NodePublis
 		return &csi.NodePublishVolumeResponse{}, nil
 	}
 
-	args := []string{"--bind", alluxioFuseHostPath, targetPath}
+	args := []string{"--bind", stagingPath, targetPath}
 	command := exec.Command("mount", args...)
 	_, err = command.CombinedOutput()
 	if err != nil {
@@ -110,7 +110,8 @@ func (ns *nodeServer) NodeStageVolume(ctx context.Context, req *csi.NodeStageVol
 		glog.V(3).Infof("Error creating CSI Fuse pod. %+v", err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if err := checkIfMountPointReady(alluxioFuseHostPath); err != nil {
+	stagingPath := fmt.Sprintf("%s-%s", alluxioFuseHostPath, req.VolumeId)
+	if err := checkIfMountPointReady(stagingPath); err != nil {
 		glog.V(3).Infof("Mount point is not ready, or error occurs. %+v", err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -134,6 +135,12 @@ func getAndCompleteFusePodObj(ns *nodeServer, req *csi.NodeStageVolumeRequest) (
 
 	// Set node name for scheduling
 	csiFusePodObj.Spec.NodeName = ns.nodeId
+
+	// Use unique mount path
+	stagingPath := fmt.Sprintf("%s-%s", alluxioFuseHostPath, req.VolumeId)
+	csiFusePodObj.Spec.InitContainers[0].Command[2] = stagingPath
+	csiFusePodObj.Spec.Containers[0].Args[0] = strings.ReplaceAll(csiFusePodObj.Spec.Containers[0].Args[0], alluxioFuseHostPath, stagingPath)
+	csiFusePodObj.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[2] = stagingPath
 
 	return csiFusePodObj, nil
 }
