@@ -5,7 +5,7 @@ plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: k8s-operator
-repo: github.com/alluxio/k8s-operator
+repo: github.com/Alluxio/k8s-operator
 resources:
 - api:
     crdVersion: v1
@@ -14,7 +14,7 @@ resources:
   domain: alluxio.com
   group: k8s-operator
   kind: AlluxioCluster
-  path: github.com/alluxio/k8s-operator/api/v1alpha1
+  path: github.com/Alluxio/k8s-operator/api/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -23,7 +23,7 @@ resources:
   domain: alluxio.com
   group: k8s-operator
   kind: Dataset
-  path: github.com/alluxio/k8s-operator/api/v1alpha1
+  path: github.com/Alluxio/k8s-operator/api/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -32,6 +32,6 @@ resources:
   domain: alluxio.com
   group: k8s-operator
   kind: Load
-  path: github.com/alluxio/k8s-operator/api/v1alpha1
+  path: github.com/Alluxio/k8s-operator/api/v1alpha1
   version: v1alpha1
 version: "3"

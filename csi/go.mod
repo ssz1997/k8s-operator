@@ -1,4 +1,4 @@
-module github.com/alluxio/csi
+module github.com/Alluxio/csi
 
 go 1.18
 
