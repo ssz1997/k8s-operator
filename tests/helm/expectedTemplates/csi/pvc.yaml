@@ -17,6 +17,8 @@ metadata:
   name: dummy-alluxio-alluxio-csi-fuse-pvc
 spec:
   storageClassName: dummy-alluxio-csi-storage-class
+  accessModes:
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Mi # The storage here is only for mount, so the size doesn't matter
