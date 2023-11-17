@@ -24,7 +24,7 @@ type DatasetSpec struct {
 
 type DatasetConf struct {
 	Path        string            `json:"path" yaml:"path"`
-	Credentials map[string]string `json:"credentials,omitemptty" yaml:"credentials,omitempty"`
+	Credentials map[string]string `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
 // +kubebuilder:object:root=true
