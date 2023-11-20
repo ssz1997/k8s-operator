@@ -60,7 +60,6 @@ spec:
                   path:
                     type: string
                 required:
-                - credentials
                 - path
                 type: object
             required:
