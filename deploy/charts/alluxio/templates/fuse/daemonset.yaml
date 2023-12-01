@@ -177,7 +177,7 @@ spec:
       volumes:
         - name: alluxio-fuse-mount
           hostPath:
-            path: {{ .Values.fuse.hostPathForMount }}
+            path: {{ .Values.fuse.hostPathForMount | dir }}
             type: DirectoryOrCreate
         - name: {{ $fullName }}-alluxio-conf
           configMap:
