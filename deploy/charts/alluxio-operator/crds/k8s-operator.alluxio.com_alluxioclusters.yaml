@@ -1007,6 +1007,8 @@ spec:
                     type: object
                   group:
                     type: integer
+                  hostPathForMount:
+                    type: string
                   jvmOptions:
                     items:
                       type: string
@@ -2099,7 +2101,7 @@ spec:
                   enabled:
                     type: boolean
                   hostPath:
-                    type: string
+                    type: boolean
                   size:
                     type: string
                   storageClass:
