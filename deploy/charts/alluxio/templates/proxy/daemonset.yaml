@@ -27,6 +27,9 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     role: alluxio-proxy
+    {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -36,6 +39,9 @@ spec:
       release: {{ .Release.Name }}
       heritage: {{ .Release.Service }}
       role: alluxio-proxy
+      {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 6 }}
+      {{- end }}
   template:
     metadata:
       labels:
@@ -45,6 +51,9 @@ spec:
         release: {{ .Release.Name }}
         heritage: {{ .Release.Service }}
         role: alluxio-proxy
+        {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 8 }}
+        {{- end }}
       annotations:
       {{- if .Values.proxy.podAnnotations }}
 {{- toYaml .Values.worker.podAnnotations | nindent 8 }}

@@ -55,6 +55,12 @@ serviceAccountName:
 #       - "example2.com"
 hostAliases:
 
+# Labels attached to all components of Alluxio. Format:
+# globalPodLabel:
+#   <label key1>: <label value1>
+#   <label key2>: <label value2>
+globalPodLabel:
+
 # Use labels to run Alluxio on a subset of the K8s nodes. Format:
 # nodeSelector:
 #   <lable key1>: <label value1>

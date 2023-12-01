@@ -20,6 +20,8 @@ data:
         name: dummy-alluxio-fuse
         app: alluxio
         role: alluxio-fuse
+        globalPodLabelKey1: globalPodLabelVal1
+        globalPodLabelKey2: globalPodLabelVal2
     spec:
       securityContext:
         runAsUser: 1000

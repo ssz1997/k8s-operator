@@ -38,6 +38,9 @@ data:
         name: {{ $fullName }}-fuse
         app: {{ $name }}
         role: alluxio-fuse
+      {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 8 }}
+      {{- end }}
     spec:
       securityContext:
         runAsUser: {{ .Values.fuse.user }}

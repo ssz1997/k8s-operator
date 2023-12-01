@@ -1061,6 +1061,10 @@ spec:
                   user:
                     type: integer
                 type: object
+              globalPodLabel:
+                additionalProperties:
+                  type: string
+                type: object
               group:
                 type: integer
               hostAliases:
