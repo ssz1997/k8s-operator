@@ -187,6 +187,8 @@ journal:
 worker:
   # Number of workers to launch
   count: 1
+  # The path on the host machine for system information
+  hostPathForSystemInfo: /mnt/alluxio/system-info
   # The path on the host machine for storing worker log
   hostPathForLogs: /mnt/alluxio/logs/worker
   # Whether to limit at most one Alluxio worker per k8s node.
