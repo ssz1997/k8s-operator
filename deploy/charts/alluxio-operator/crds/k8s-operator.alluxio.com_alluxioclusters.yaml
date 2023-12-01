@@ -2101,7 +2101,7 @@ spec:
                   enabled:
                     type: boolean
                   hostPath:
-                    type: boolean
+                    type: string
                   size:
                     type: string
                   storageClass:

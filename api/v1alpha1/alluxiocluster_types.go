@@ -122,7 +122,7 @@ type PagestoreSpec struct {
 
 type MetastoreSpec struct {
 	Enabled      *bool  `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	HostPath     *bool  `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	HostPath     string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
 	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
 	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
 	Type         string `json:"type,omitempty" yaml:"type,omitempty"`
