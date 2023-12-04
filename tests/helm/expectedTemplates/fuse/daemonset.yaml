@@ -23,6 +23,8 @@ metadata:
     release: dummy
     heritage: Helm
     role: alluxio-fuse
+    globalPodLabelKey1: globalPodLabelVal1
+    globalPodLabelKey2: globalPodLabelVal2
 spec:
   selector:
     matchLabels:
@@ -31,6 +33,8 @@ spec:
       release: dummy
       heritage: Helm
       role: alluxio-fuse
+      globalPodLabelKey1: globalPodLabelVal1
+      globalPodLabelKey2: globalPodLabelVal2
   template:
     metadata:
       labels:
@@ -39,6 +43,8 @@ spec:
         release: dummy
         heritage: Helm
         role: alluxio-fuse
+        globalPodLabelKey1: globalPodLabelVal1
+        globalPodLabelKey2: globalPodLabelVal2
       annotations:
         proxyAnnotationKey1: fuseAnnotationVal1
         proxyAnnotationKey2: fuseAnnotationVal2

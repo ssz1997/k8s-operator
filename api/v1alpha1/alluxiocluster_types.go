@@ -33,6 +33,7 @@ type AlluxioClusterSpec struct {
 	DnsPolicy          string             `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
 	ServiceAccountName string             `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
 	HostAliases        []HostAlias        `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`
+	GlobalPodLabel     map[string]string  `json:"globalPodLabel,omitempty" yaml:"globalPodLabel,omitempty"`
 	HostPaths          MountSpec          `json:"hostPaths,omitempty" yaml:"hostPaths,omitempty"`
 	NodeSelector       map[string]string  `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
 	Tolerations        []Toleration       `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
@@ -122,7 +123,7 @@ type PagestoreSpec struct {
 
 type MetastoreSpec struct {
 	Enabled      *bool  `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	HostPath     *bool  `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	HostPath     string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
 	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
 	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
 	Type         string `json:"type,omitempty" yaml:"type,omitempty"`

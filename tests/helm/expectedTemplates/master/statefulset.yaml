@@ -22,12 +22,16 @@ metadata:
     release: dummy
     heritage: Helm
     role: alluxio-master
+    globalPodLabelKey1: globalPodLabelVal1
+    globalPodLabelKey2: globalPodLabelVal2
 spec:
   selector:
     matchLabels:
       app: alluxio
       role: alluxio-master
       name: dummy-alluxio-master
+      globalPodLabelKey1: globalPodLabelVal1
+      globalPodLabelKey2: globalPodLabelVal2
   serviceName: dummy-alluxio-master
   replicas: 3
   template:
@@ -39,6 +43,8 @@ spec:
         release: dummy
         heritage: Helm
         role: alluxio-master
+        globalPodLabelKey1: globalPodLabelVal1
+        globalPodLabelKey2: globalPodLabelVal2
       annotations:
         masterAnnotationKey1: masterAnnotationVal1
         masterAnnotationKey2: masterAnnotationVal2

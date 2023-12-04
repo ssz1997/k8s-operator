@@ -31,12 +31,18 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     role: alluxio-master
+    {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
       app: {{ $name }}
       role: alluxio-master
       name: {{ $fullName }}-master
+      {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 6 }}
+      {{- end }}
   serviceName: {{ $fullName }}-master
   replicas: {{ int .Values.master.count }}
   template:
@@ -48,6 +54,9 @@ spec:
         release: {{ .Release.Name }}
         heritage: {{ .Release.Service }}
         role: alluxio-master
+        {{- if .Values.globalPodLabel }}
+{{ toYaml .Values.globalPodLabel | trim | indent 8 }}
+        {{- end }}
       annotations:
       {{- if .Values.master.podAnnotations }}
 {{- toYaml .Values.master.podAnnotations | nindent 8 }}

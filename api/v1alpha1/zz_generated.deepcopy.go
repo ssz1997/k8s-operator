@@ -109,6 +109,13 @@ func (in *AlluxioClusterSpec) DeepCopyInto(out *AlluxioClusterSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.GlobalPodLabel != nil {
+		in, out := &in.GlobalPodLabel, &out.GlobalPodLabel
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	in.HostPaths.DeepCopyInto(&out.HostPaths)
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector
