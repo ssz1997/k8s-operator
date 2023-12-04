@@ -4065,6 +4065,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  hostPathForSystemInfo:
+                    type: string
                   jvmOptions:
                     items:
                       type: string

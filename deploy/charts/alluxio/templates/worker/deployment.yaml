@@ -259,7 +259,7 @@ spec:
             name: {{ $fullName }}-alluxio-conf
         - name: {{ $alluxioWorkerSysInfoVolumeName }}
           hostPath:
-            path: {{ $alluxioWorkerSysInfoDirPath }}
+            path: {{ .Values.worker.hostPathForSystemInfo }}
             type: DirectoryOrCreate
         {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioWorkerLogVolumeName }}

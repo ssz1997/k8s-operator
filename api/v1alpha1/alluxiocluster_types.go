@@ -101,6 +101,7 @@ type WorkerSpec struct {
 	Affinity              corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
 	Count                 int               `json:"count,omitempty" yaml:"count,omitempty"`
 	Env                   map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	HostPathForSystemInfo string            `json:"hostPathForSystemInfo,omitempty" yaml:"hostPathForSystemInfo,omitempty"`
 	JvmOptions            []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
 	LimitOneWorkerPerNode bool              `json:"limitOneWorkerPerNode,omitempty" yaml:"limitOneWorkerPerNode,omitempty"`
 	LivenessProbe         ProbeSpec         `json:"livenessProbe,omitempty" yaml:"livenessProbe,omitempty"`
