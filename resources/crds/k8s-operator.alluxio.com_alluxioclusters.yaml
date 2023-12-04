@@ -1007,6 +1007,8 @@ spec:
                     type: object
                   group:
                     type: integer
+                  hostPathForMount:
+                    type: string
                   jvmOptions:
                     items:
                       type: string
