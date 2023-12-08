@@ -16,6 +16,7 @@ alluxio.user.short.circuit.enabled=false
 alluxio.master.worker.register.lease.enabled=false
 
 # Common properties
+alluxio.k8s.env.deployment=true
 {{- if ne (get .Values.properties "alluxio.mount.table.source") "ETCD" }}
 alluxio.dora.client.ufs.root={{ .Values.dataset.path }}
 {{- end }}
