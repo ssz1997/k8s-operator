@@ -29,6 +29,7 @@ data:
     alluxio.master.worker.register.lease.enabled=false
     
     # Common properties
+    alluxio.k8s.env.deployment=true
     alluxio.dora.client.ufs.root=/dummy/dataset/path
     dummyCredential0=dummyVal0
     dummyCredential1=dummyVal1
