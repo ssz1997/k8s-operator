@@ -33,7 +33,6 @@ alluxio.master.hostname={{ include "alluxio.fullname" . }}-master-0
 {{- end }}
 
 # Journal properties
-{{ printf "alluxio.master.journal.type=EMBEDDED" }}
 {{ printf "alluxio.master.journal.folder=%v" (include "alluxio.mount.basePath" "/journal") }}
 {{- if gt (int .Values.master.count) 1 }}
 {{- $embeddedJournalAddresses := ""}}
