@@ -38,7 +38,6 @@ data:
     alluxio.cluster.name=default-dummy
     
     # Journal properties
-    alluxio.master.journal.type=EMBEDDED
     alluxio.master.journal.folder=/mnt/alluxio/journal
     alluxio.master.embedded.journal.addresses=,dummy-alluxio-master-0:19200,dummy-alluxio-master-1:19200,dummy-alluxio-master-2:19200
     
