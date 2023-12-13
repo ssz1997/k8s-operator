@@ -111,10 +111,10 @@ spec:
             privileged: true # required by bidirectional mount
           command: [ "/bin/sh", "-c" ]
           args:
-            - umount -l /mnt/alluxio/fuse || true
+            - umount -l /dummy/path/for/fuse/mount || true
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: /mnt/alluxio
+              mountPath: /dummy/path/for/fuse
               mountPropagation: Bidirectional
         - name: path-permission
           image: dummy/dummy:dummy
@@ -125,20 +125,20 @@ spec:
           command: [ "chown", "-R" ]
           args:
             - 1000:1000
-            - /mnt/alluxio
+            - /dummy/path/for/fuse
             - /opt/alluxio/logs
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: /mnt/alluxio
+              mountPath: /dummy/path/for/fuse
             - name: dummy-alluxio-fuse-log-volume
               mountPath: /opt/alluxio/logs
         - name: create-alluxio-fuse-dir
           image: dummy/dummy:dummy
           imagePullPolicy: IfNotPresent
-          command: [ "mkdir", "-p", /mnt/alluxio/fuse]
+          command: [ "mkdir", "-p", /dummy/path/for/fuse/mount]
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: /mnt/alluxio
+              mountPath: /dummy/path/for/fuse
         - name: wait-master
           image: dummy/dummy:dummy
           command: ["/bin/sh", "-c"]
@@ -159,8 +159,8 @@ spec:
               memory: 1Gi
           command: ["/bin/sh", "-c"]
           args:
-            - umount -l /mnt/alluxio/fuse;
-              /entrypoint.sh fuse /dummy/dataset/path /mnt/alluxio/fuse -o allow_other -o entry_timeout=3600 -o attr_timeout=3600
+            - umount -l /dummy/path/for/fuse/mount;
+              /entrypoint.sh fuse /dummy/dataset/path /dummy/path/for/fuse/mount -o allow_other -o entry_timeout=3600 -o attr_timeout=3600
           env:
             - name: ALLUXIO_CLIENT_HOSTNAME
               valueFrom:
@@ -175,10 +175,10 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["fusermount", "-u", /mnt/alluxio/fuse]
+                command: ["fusermount", "-u", /dummy/path/for/fuse/mount]
           volumeMounts:
             - name: alluxio-fuse-mount
-              mountPath: /mnt/alluxio
+              mountPath: /dummy/path/for/fuse
               mountPropagation: Bidirectional
             - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
@@ -206,7 +206,7 @@ spec:
       volumes:
         - name: alluxio-fuse-mount
           hostPath:
-            path: /mnt/alluxio
+            path: /dummy/path/for/fuse
             type: DirectoryOrCreate
         - name: dummy-alluxio-alluxio-conf
           configMap:

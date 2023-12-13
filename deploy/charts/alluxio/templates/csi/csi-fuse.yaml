@@ -12,8 +12,6 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
-{{- $hostMountPath := include "alluxio.mount.basePath" "" }}
-{{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse" }}
 {{- $alluxioFuseLogDir := include "alluxio.basePath" "/logs"}}
 {{- $alluxioFuseLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "fuse-log") }}
 
@@ -64,18 +62,18 @@ data:
           privileged: true # required by bidirectional mount
         command: [ "/bin/sh", "-c" ]
         args:
-          - umount -l {{ $alluxioFuseMountPoint }} || true
+          - umount -l {{ .Values.fuse.hostPathForMount }} || true
         volumeMounts:
           - name: alluxio-fuse-mount
-            mountPath: {{ $hostMountPath }}
+            mountPath: {{ .Values.fuse.hostPathForMount | dir }}
             mountPropagation: Bidirectional
       - name: create-alluxio-fuse-dir
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        command: [ "mkdir", "-p", {{ $alluxioFuseMountPoint }}]
+        command: [ "mkdir", "-p", {{ .Values.fuse.hostPathForMount }}]
         volumeMounts:
           - name: alluxio-fuse-mount
-            mountPath: {{ $hostMountPath }}
+            mountPath: {{ .Values.fuse.hostPathForMount | dir }}
       {{- if .Values.master.enabled }}
       - name: wait-master
         image: {{ .Values.image }}:{{ .Values.imageTag }}
@@ -94,12 +92,12 @@ data:
           {{- end }}
           command: ["/bin/sh", "-c"]
           args:
-            - umount -l {{ $alluxioFuseMountPoint }};
+            - umount -l {{ .Values.fuse.hostPathForMount }};
               {{- $mountTableSource := get .Values.properties "alluxio.mount.table.source" }}
               {{- if or (eq $mountTableSource "ETCD") (eq $mountTableSource "STATIC_FILE") }}
-              /entrypoint.sh fuse {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
+              /entrypoint.sh fuse {{ .Values.fuse.hostPathForMount }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
               {{- else }}
-              /entrypoint.sh fuse {{ required "The path of the dataset must be set." .Values.dataset.path }} {{ $alluxioFuseMountPoint }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
+              /entrypoint.sh fuse {{ required "The path of the dataset must be set." .Values.dataset.path }} {{ .Values.fuse.hostPathForMount }} {{- range .Values.fuse.mountOptions }} -o {{ . }} {{- end }}
               {{- end }}
           env:
           {{- range $key, $value := .Values.fuse.env }}
@@ -111,12 +109,12 @@ data:
           lifecycle:
             preStop:
               exec:
-                command: ["fusermount", "-u", {{ $alluxioFuseMountPoint }}]
+                command: ["fusermount", "-u", {{ .Values.fuse.hostPathForMount }}]
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
             - name: alluxio-fuse-mount
-              mountPath: {{ $hostMountPath }}
+              mountPath: {{ .Values.fuse.hostPathForMount | dir }}
               mountPropagation: Bidirectional
             {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioFuseLogVolumeName }}

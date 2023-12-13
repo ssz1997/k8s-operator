@@ -459,6 +459,8 @@ proxy:
 fuse:
   # Whether to launch Fuse pods
   enabled: true
+  # The path on the host machine for mount Alluxio Fuse
+  hostPathForMount: /dummy/path/for/fuse/mount
   # Extra environment variables for the Alluxio fuse pods. Format:
   # env:
   #   <key1>: <value1>
